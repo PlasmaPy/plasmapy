@@ -1,3 +1,5 @@
+.. include:: /ad/ad_attention.inc
+
 .. _diagnostics:
 
 *******************************************
@@ -11,5 +13,5 @@ Plasma diagnostics (`plasmapy.diagnostics`)
    :maxdepth: 1
    :caption: Sub-Packages and Modules
 
-   langmuir
+   Swept Langmuir Analysis (will be deprecated) <langmuir>
    thomson

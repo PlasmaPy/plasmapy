@@ -25,9 +25,17 @@ import numpy as np
 from astropy.constants import si as const
 from astropy.visualization import quantity_support
 from scipy.optimize import curve_fit
+from warnings import warn
 
 from plasmapy.particles import Particle
 from plasmapy.utils.decorators import validate_quantities
+
+
+def _langmuir_futurewarning() -> None:
+    warn("The plasmapy.diagnostics.langmuir module will be deprecated in favor of "
+         "the plasmapy.analysis.swept_langmuir sub-package.  The analysis package "
+         " is in active development and is scheduled to be released with v0.5.0.",
+         FutureWarning)
 
 
 def _fit_func_lin(x, x0, y0, c0):
@@ -72,6 +80,8 @@ class Characteristic:
 
     @validate_quantities(bias={"can_be_inf": False}, current={"can_be_inf": False})
     def __init__(self, bias: u.V, current: u.A):
+        _langmuir_futurewarning()
+
         self.bias = bias
         self.current = current
         self.get_unique_bias(True)
@@ -284,6 +294,8 @@ def swept_probe_analysis(
     for OML theory hold.
 
     """
+    _langmuir_futurewarning()
+
     # Instantiate gas using the Particle class
     gas = Particle(argument=gas_argument)
 
@@ -467,6 +479,8 @@ def get_plasma_potential(probe_characteristic, return_arg=False):
 
     """
 
+    _langmuir_futurewarning()
+
     if not isinstance(probe_characteristic, Characteristic):
         raise TypeError(
             f"For 'probe_characteristic' expected type "
@@ -517,6 +531,8 @@ def get_floating_potential(probe_characteristic, return_arg=False):
 
     """
 
+    _langmuir_futurewarning()
+
     if not isinstance(probe_characteristic, Characteristic):
         raise TypeError(
             f"For 'probe_characteristic' expected type "
@@ -554,6 +570,8 @@ def get_electron_saturation_current(probe_characteristic):
 
     """
 
+    _langmuir_futurewarning()
+
     if not isinstance(probe_characteristic, Characteristic):
         raise TypeError(
             f"For 'probe_characteristic' expected type "
@@ -588,6 +606,8 @@ def get_ion_saturation_current(probe_characteristic):
     saturate.
 
     """
+
+    _langmuir_futurewarning()
 
     if not isinstance(probe_characteristic, Characteristic):
         raise TypeError(
@@ -653,6 +673,8 @@ def get_ion_density_LM(
 
     """
 
+    _langmuir_futurewarning()
+
     # Calculate the acoustic (Bohm) velocity
     c_s = np.sqrt(T_e / gas)
 
@@ -713,6 +735,8 @@ def get_electron_density_LM(
 
     """
 
+    _langmuir_futurewarning()
+
     # Calculate the thermal electron velocity
     v_th = np.sqrt(8 * T_e / (np.pi * const.m_e))
 
@@ -752,6 +776,8 @@ def extract_exponential_section(probe_characteristic, T_e=None, ion_current=None
     accuracy can be made when the electron temperature is supplied.
 
     """
+
+    _langmuir_futurewarning()
 
     if not isinstance(probe_characteristic, Characteristic):
         raise TypeError(
@@ -806,6 +832,8 @@ def extract_ion_section(probe_characteristic):
     bounded by the floating potential on the right hand side.
 
     """
+
+    _langmuir_futurewarning()
 
     if not isinstance(probe_characteristic, Characteristic):
         raise TypeError(
@@ -875,6 +903,8 @@ def get_electron_temperature(
         \textrm{log} \left(I_e \right ) \propto \frac{1}{T_e}.
 
     """
+
+    _langmuir_futurewarning()
 
     if not isinstance(exponential_section, Characteristic):
         raise TypeError(
@@ -1038,6 +1068,8 @@ def extrapolate_electron_current(
 
     """
 
+    _langmuir_futurewarning()
+
     if not isinstance(probe_characteristic, Characteristic):
         raise TypeError(
             f"For 'probe_characteristic' expected type "
@@ -1126,6 +1158,8 @@ def reduce_bimaxwellian_temperature(T_e: u.eV, hot_fraction: float) -> u.eV:
 
     """
 
+    _langmuir_futurewarning()
+
     # Return the electron temperature itself if it is not bi-Maxwellian
     # in the first place.
     if hot_fraction is None or not np.array(T_e).size > 1:
@@ -1187,6 +1221,8 @@ def get_ion_density_OML(
         Phys. Rev. 28, 727-763 (Oct. 1926)
 
     """
+
+    _langmuir_futurewarning()
 
     if not isinstance(probe_characteristic, Characteristic):
         raise TypeError(
@@ -1273,6 +1309,8 @@ def extrapolate_ion_current_OML(probe_characteristic, fit, visualize=False):
 
     """
 
+    _langmuir_futurewarning()
+
     if not isinstance(probe_characteristic, Characteristic):
         raise TypeError(
             f"For 'probe_characteristic' expected type "
@@ -1354,6 +1392,8 @@ def get_EEDF(probe_characteristic, visualize=False):
     .. [druyvesteyn-1930] Druyvesteyn, M.J. Z. Physik (1930) 64: 781
 
     """
+
+    _langmuir_futurewarning()
 
     if not isinstance(probe_characteristic, Characteristic):
         raise TypeError(

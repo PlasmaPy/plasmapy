@@ -13,3 +13,4 @@ sphinx-automodapi
 sphinx-copybutton
 sphinx-gallery
 sphinx_rtd_theme
+nbconvert<6.0.0
