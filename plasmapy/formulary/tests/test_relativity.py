@@ -80,3 +80,5 @@ def test_relativistic_energy():
 
     with pytest.raises(ValueError):
         relativistic_energy(-m, v)
+
+def test_quiver_velocity():

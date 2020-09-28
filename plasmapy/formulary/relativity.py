@@ -156,3 +156,52 @@ def relativistic_energy(m: u.kg, v: u.m / u.s) -> u.Joule:
     gamma = Lorentz_factor(v)
     E = gamma * m * c ** 2
     return E
+
+
+def quiver_velocity(E: u.V / u.m, w: 1 / u.s, q: u.C, m: u.kg):
+    """
+    Quiver velocity or normalized momentum is the term given to the amplitude of the oscillation of
+    a charged particle due to electromagnetic radiation. It is usually expressed as a dimensionless
+    quantity by dividing the amplitude by c.
+
+    .. math::
+
+        a = /frac{q E_0}{m \\omega c}}
+
+    :math: `E_0` is Electric field intensity
+    :math: `m` is mass of the particle
+    :math: `\\omega` is the angular frequency of the radiation
+    :math: `q` is the charge of the particle
+    :math: `c` is the speed of light
+    This is true when the electric field :math: `E` is modeled as :math: `E = E_0 sin(\\omega t)`
+
+    Parameters
+    ----------
+    E : `~astropy.units.Quantity`
+        Electric field intensity.
+
+    w : `~astropy.units.Quantity`
+        The angular frequency of the radiation.
+
+    q : `~astropy.units.Quantity`
+        The charge of the particle
+
+    m : `~astropy.units.Quantity`
+        The mass of the particle
+
+    Returns
+    -------
+    a : `~astropy.Quantity`
+        The dimensionless electron quiver velocity.
+
+    NOTE
+    ----
+    This quantity can be greater than one, in which case it is more appropriate to refer to this quantity
+    as "normalized momentum" since the real velocity of the particle can not be greater than the speed
+    of light.
+
+    """
+
+    a = E * q / (m * w * c)
+
+    return a
