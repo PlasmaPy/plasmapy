@@ -2,12 +2,18 @@ import astropy.units as u
 import numpy as np
 import pytest
 
+from astropy import constants
 from astropy import units as u
 from astropy.modeling import fitting, models
 from scipy.optimize import curve_fit
 
 from plasmapy.plasma.sources import Plasma3D
 from plasmapy.simulation.particletracker import ParticleTracker
+
+
+@pytest.fixture(params=ParticleTracker._all_integrators)
+def integrator(request):
+    return request.param
 
 
 @pytest.fixture()
@@ -102,7 +108,7 @@ def fit_sine_curve(position, t, expected_gyrofrequency, phase=0):
 
 
 @pytest.mark.slow
-def test_particle_exb_drift(uniform_magnetic_field):
+def test_particle_exb_drift(uniform_magnetic_field, integrator):
     r"""
     Tests the particle stepper for a field with magnetic field in the Z
     direction, electric field in the y direction. This should produce a
@@ -120,8 +126,130 @@ def test_particle_exb_drift(uniform_magnetic_field):
         .to(u.m / u.s)
     )
 
-    s = ParticleTracker(test_plasma, "p", 5, dt=1e-10 * u.s, nt=int(5e3))
+    s = ParticleTracker(
+        test_plasma, "p", 5, dt=1e-10 * u.s, nt=int(5e3), integrator=integrator
+    )
     s.v[:, 2] += np.random.normal(size=s.N) * u.m / u.s
+
+    s.run()
+
+    p_init = models.Polynomial1D(degree=1)
+    for x in s.position_history[:, :, 0].T:
+        fit_p = fitting.LinearLSQFitter()
+        p = fit_p(p_init, s.t, x)
+        fit_velocity = p.parameters[1] * u.m / u.s
+
+        assert np.allclose(
+            x, p(s.t), atol=1e-3 * u.m
+        ), "x position doesn't follow linear fit!"
+
+        assert np.isclose(
+            expected_drift_velocity, fit_velocity, atol=1e-3 * u.m / u.s
+        ), "x velocity doesn't agree with expected drift velocity!"
+
+    s.test_kinetic_energy()
+
+    # s.plot_trajectories()
+
+
+""" TODO: figure out how to get this test to work
+def test_particle_exb_nonuniform_drift():
+        Tests the particle stepper for a field with magnetic field in the Z
+        direction, electric field in the y direction. This should produce a
+        drift in the negative X direction, with the drift velocity
+
+        v_e = ExB / B^2
+
+        which is independent of ion charge.
+    test_plasma = uniform_magnetic_field(10, 1e-3)
+    c1 = 10 * u.V / u.m**3
+    test_plasma.electric_field[1] = c1 * test_plasma.x**2 / 2
+    perp_speed = 1e3 * u.m / u.s
+    parallel_speed = 1e-5 * u.m / u.s
+
+
+    s = ParticleTracker(test_plasma, particle_type='p', dt=1e-10 * u.s, nt=int(1e4))
+    s.v[:, 1] = parallel_speed
+    s.v[:, 2] = perp_speed
+
+    expected_gyrofrequency = (s.q * test_plasma.magnetic_field_strength.mean()
+                              / s.m).to(1 / u.s)
+    expected_gyroradius = perp_speed / expected_gyrofrequency
+    s.x[:, 0] = expected_gyroradius / 2
+
+    expected_drift_velocity = -(test_plasma.electric_field_strength /
+                                test_plasma.magnetic_field_strength).to(u.m/u.s)
+    expected_drift_velocity += 0.25 * expected_gyroradius**2 * c1 / u.T
+    expected_drift_velocity = expected_drift_velocity.mean().to(u.m / u.s)
+
+    s.run()
+
+    x = s.position_history[:, 0, 0]
+
+    # s.plot_time_trajectories("x")
+
+    # p_init = models.Polynomial1D(degree=1)
+    # fit_p = fitting.LinearLSQFitter()
+    # p = fit_p(p_init, s.t, x)
+    # fit_velocity = p.parameters[1] * u.m / u.s
+    #
+    # # s.plot_trajectories()
+
+    # assert np.allclose(x, p(s.t), atol=1e-3 * u.m), \
+    #     "x position doesn't follow linear fit!"
+    #
+
+    # assert np.isclose(expected_drift_velocity, fit_velocity,
+    #                   atol=1e-3 * u.m / u.s), \
+    #     "x velocity doesn't agree with expected drift velocity!"
+    #
+    # s.test_kinetic_energy()
+"""
+
+
+# def test_particle_nonuniform_grid():
+#     '''
+#         Test the particle stepper when the spatial domain dimensions
+#         are unequal
+#     '''
+#     x = np.linspace(0, 1, 10)*u.m
+#     y = np.linspace(0, 1, 20)*u.m
+#     z = np.linspace(0, 1, 30)*u.m
+
+#     plasma = Plasma3D(x, y, z)
+
+#     ParticleTracker(plasma, 'e', dt=1e-14*u.s, nt=2).run()
+
+
+@pytest.mark.slow
+def test_particle_exb_drift_relativistic(uniform_magnetic_field):
+    r"""
+    Tests the particle stepper for a field with magnetic field in the Z
+    direction, electric field in the y direction. This should produce a
+    drift in the negative X direction, with the drift velocity
+
+    v_e = ExB / B^2
+
+    which is independent of ion charge.
+    """
+    test_plasma = uniform_magnetic_field
+    test_plasma.electric_field[1] = 1 * u.V / u.m
+    expected_drift_velocity = -(
+        -(test_plasma.electric_field_strength / test_plasma.magnetic_field_strength)
+        .mean()
+        .to(u.m / u.s)
+    )
+
+    s = ParticleTracker(
+        test_plasma,
+        "p",
+        5,
+        dt=1e-10 * u.s,
+        nt=int(5e2),
+        integrator="explicit_boris_relativistic",
+    )
+    rand = np.random.RandomState(42)
+    s.v[:, 2] += rand.normal(size=s.N, scale=constants.c.si.value / 100) * u.m / u.s
 
     s.run()
 

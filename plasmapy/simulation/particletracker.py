@@ -6,6 +6,7 @@ __all__ = ["ParticleTracker"]
 import astropy.units as u
 import numpy as np
 import scipy.interpolate as interp
+import warnings
 
 from astropy import constants
 
@@ -60,9 +61,14 @@ class ParticleTracker:
     .. _`Particle Stepper Notebook`: ../notebooks/particle_stepper.ipynb
     """
 
-    integrators = {"explicit_boris": particle_integrators.boris_push}
+    integrators = {
+        "explicit_boris": particle_integrators.boris_push,
+    }
 
-    _wip_integrators = {}
+    # Work In Progress integrators (throws a warning if used)
+    _wip_integrators = {
+        "explicit_boris_relativistic": particle_integrators.boris_push_relativistic,
+    }
 
     _all_integrators = dict(**integrators, **_wip_integrators)
 
@@ -106,6 +112,12 @@ class ParticleTracker:
         # interpolation on non-equal spatial domain dimensions
         _B = np.moveaxis(self.plasma.magnetic_field.si.value, 0, -1)
         _E = np.moveaxis(self.plasma.electric_field.si.value, 0, -1)
+
+        if integrator not in self.integrators.keys():
+            warnings.warn(
+                f"The {integrator} integrator is still under development. "
+                "Use at your own risk."
+            )
 
         self.integrator = self._all_integrators[integrator]
 
