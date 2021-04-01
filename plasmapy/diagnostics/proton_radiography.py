@@ -1015,6 +1015,7 @@ class SyntheticProtonRadiograph:
         # Advance the particles to the near the start of the grid
         self._coast_to_grid()
 
+        # TODO from here...
         # Initialize a "progress bar" (really more of a meter)
         # Setting sys.stdout lets this play nicely with regular print()
         pbar = tqdm(
@@ -1038,6 +1039,7 @@ class SyntheticProtonRadiograph:
             self._push()
         pbar.close()
 
+        # TODO to here, effectively
         # Remove particles that will never reach the detector
         self._remove_deflected_particles()
 

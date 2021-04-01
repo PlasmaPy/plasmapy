@@ -52,8 +52,8 @@ def boris_push(x, v, B, E, q, m, dt):
        field.
     3. Add the second half of the impulse from the electric field.
 
-    This ends up causing the magnetic field action to be properly "centered" in
-    time, and the algorithm, being a symplectic integrator, conserves energy.
+    This ends up causing the magnetic field action to be properly
+    "centered" in time, and the algorithm conserves energy.
 
     References
     ----------
