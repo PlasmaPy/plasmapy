@@ -5,6 +5,7 @@ h5py >= 2.8
 lmfit >= 1.0.1
 matplotlib >= 2.0
 mpmath >= 1.0.0
+numba
 numpy >= 1.18.1
 pandas >= 1.0.0
 scipy >= 1.2

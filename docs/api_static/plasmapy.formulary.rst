@@ -28,4 +28,3 @@ Sub-Packages & Modules
 .. automodapi:: plasmapy.formulary
    :no-main-docstr:
    :no-heading:
-   :include-all-objects:
