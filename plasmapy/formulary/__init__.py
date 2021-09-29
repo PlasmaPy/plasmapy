@@ -18,6 +18,7 @@ from .mathematics import *
 from .parameters import *
 from .quantum import *
 from .relativity import *
+from .shocks import *
 
 # auto populate __all__
 for obj_name in list(globals()):

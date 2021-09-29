@@ -50,6 +50,9 @@ physical quantities helpful for plasma physics.
    | .. toctree:: Relativistic Relations <relativity>       | `plasmapy.formulary.relativity`         |
    |    :maxdepth: 1                                        |                                         |
    +--------------------------------------------------------+-----------------------------------------+
+   | .. toctree:: Shocks <shocks>                           | `plasmapy.formulary.shocks`             |
+   |    :maxdepth: 1                                        |                                         |
+   +--------------------------------------------------------+-----------------------------------------+
 
 The subpackage makes heavy use of `astropy.units.Quantity` for handling
 conversions between different unit systems. This is especially important
