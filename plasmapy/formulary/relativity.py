@@ -155,3 +155,25 @@ def relativistic_energy(m: u.kg, v: u.m / u.s) -> u.Joule:
     γ = Lorentz_factor(v)
     E = γ * m * c ** 2
     return E
+
+
+@validate_quantities(value={"can_be_negative": False})
+def relativistic_speed(
+    value: [u.J, u.kg * u.m / u.s],
+    particle: ParticleLike,
+    is_kinetic_energy: bool = False,
+) -> u.m / u.s:
+    if value.units.is_equivalent(u.J):
+        if is_kinetic_energy:
+            p = (1 / c) * sqrt(
+                ((value + particle.mass * c ** 2) ** 2)
+                - ((particle.mass ** 2) * (c ** 4))
+            )
+        else:
+            p = (1 / c) * sqrt((value ** 2) - ((particle.mass ** 2) * (c ** 4)))
+
+    p = value
+    speed = p / (γ * particle.mass)
+
+
+return speed
