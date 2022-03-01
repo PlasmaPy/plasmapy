@@ -6,3 +6,4 @@ mpmath
 numba
 setuptools_scm
 tox
+isort==5.9.0

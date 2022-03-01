@@ -4,61 +4,73 @@ ci:
 
 repos:
 
-- repo: https://github.com/pre-commit/pre-commit-hooks
-  rev: v3.4.0
-  hooks:
-  - id: check-ast
-  - id: trailing-whitespace
-  - id: end-of-file-fixer
-  - id: check-merge-conflict
-  - id: requirements-txt-fixer
-  - id: check-symlinks
-  - id: check-case-conflict
-  - id: check-json
-  - id: check-toml
-  - id: check-yaml
+#- repo: https://github.com/pre-commit/pre-commit-hooks
+#  rev: v3.4.0
+#  hooks:
+#  - id: check-ast
+#  - id: trailing-whitespace
+#  - id: end-of-file-fixer
+#  - id: check-merge-conflict
+#  - id: requirements-txt-fixer
+#  - id: check-symlinks
+#  - id: check-case-conflict
+#  - id: check-json
+#  - id: check-toml
+#  - id: check-yaml
 
-- repo: https://github.com/PyCQA/isort
-  rev: 5.10.1
+- repo: local
   hooks:
+  - id: requirements
+    name: Install Requirements
+    entry: python -m pip install -r ./requirements/extras.txt
+    language: system
   - id: isort
     name: isort
-    entry: isort
-    require_serial: true
-    language: python
-    types:
-    - python
+    entry: python -m isort --color ./plasmapy
+    language: system
+    files: \.py$
 
-- repo: https://github.com/psf/black
-  rev: 21.12b0
-  hooks:
-  - id: black
-
-- repo: https://github.com/nbQA-dev/nbQA
-  rev: 0.8.0
-  hooks:
-  - id: nbqa-black
-    additional_dependencies:
-    - black==21.12b0
-    args:
-    - --nbqa-mutate
-  - id: nbqa-isort
-    additional_dependencies:
-    - isort==5.10.1
-    args:
-    - --nbqa-mutate
-
-- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
-  rev: v2.1.0
-  hooks:
-  - id: pretty-format-ini
-    args: [--autofix]
-  - id: pretty-format-toml
-    args: [--autofix]
-  - id: pretty-format-yaml
-    args: [--autofix]
-
-- repo: https://github.com/pre-commit/mirrors-csslint
-  rev: v1.0.5
-  hooks:
-  - id: csslint
+#- repo: https://github.com/PyCQA/isort
+#  rev: 5.10.1
+#  hooks:
+#  - id: isort
+#    name: isort
+#    entry: isort
+#    require_serial: true
+#    language: python
+#    types:
+#    - python
+#
+#- repo: https://github.com/psf/black
+#  rev: 21.12b0
+#  hooks:
+#  - id: black
+#
+#- repo: https://github.com/nbQA-dev/nbQA
+#  rev: 0.8.0
+#  hooks:
+#  - id: nbqa-black
+#    additional_dependencies:
+#    - black==21.12b0
+#    args:
+#    - --nbqa-mutate
+#  - id: nbqa-isort
+#    additional_dependencies:
+#    - isort==5.10.1
+#    args:
+#    - --nbqa-mutate
+#
+#- repo: https://github.com/macisamuele/language-formatters-pre-commit-hooks
+#  rev: v2.1.0
+#  hooks:
+#  - id: pretty-format-ini
+#    args: [--autofix]
+#  - id: pretty-format-toml
+#    args: [--autofix]
+#  - id: pretty-format-yaml
+#    args: [--autofix]
+#
+#- repo: https://github.com/pre-commit/mirrors-csslint
+#  rev: v1.0.5
+#  hooks:
+#  - id: csslint
