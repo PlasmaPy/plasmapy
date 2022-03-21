@@ -1,0 +1,1 @@
+Created the LineIntegratedDiagnostics class and, as an example application, implemented a synthetic interferometry diagnostic.

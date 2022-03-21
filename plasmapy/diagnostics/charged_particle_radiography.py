@@ -19,59 +19,14 @@ import warnings
 from tqdm import tqdm
 
 from plasmapy import particles
+from plasmapy.diagnostics.path_integrated_diagnostic import PathIntegratedDiagnostic
 from plasmapy.formulary.mathematics import rot_a_to_b
 from plasmapy.particles import Particle
 from plasmapy.plasma.grids import AbstractGrid
 from plasmapy.simulation.particle_integrators import boris_push
 
 
-def _coerce_to_cartesian_si(pos):
-    """
-    Takes a tuple of `astropy.unit.Quantity` values representing a position
-    in space in either Cartesian, cylindrical, or spherical coordinates, and
-    returns a numpy array representing the same point in Cartesian
-    coordinates and units of meters.
-    """
-    # Auto-detect geometry based on units
-    geo_units = [x.unit for x in pos]
-    if geo_units[2].is_equivalent(u.rad):
-        geometry = "spherical"
-    elif geo_units[1].is_equivalent(u.rad):
-        geometry = "cylindrical"
-    else:
-        geometry = "cartesian"
-
-    # Convert geometrical inputs between coordinates systems
-    pos_out = np.zeros(3)
-    if geometry == "cartesian":
-        x, y, z = pos
-        pos_out[0] = x.to(u.m).value
-        pos_out[1] = y.to(u.m).value
-        pos_out[2] = z.to(u.m).value
-
-    elif geometry == "cylindrical":
-        r, t, z = pos
-        r = r.to(u.m)
-        t = t.to(u.rad).value
-        z = z.to(u.m)
-        pos_out[0] = (r * np.cos(t)).to(u.m).value
-        pos_out[1] = (r * np.sin(t)).to(u.m).value
-        pos_out[2] = z.to(u.m).value
-
-    elif geometry == "spherical":
-        r, t, p = pos
-        r = r.to(u.m)
-        t = t.to(u.rad).value
-        p = p.to(u.rad).value
-
-        pos_out[0] = (r * np.sin(t) * np.cos(p)).to(u.m).value
-        pos_out[1] = (r * np.sin(t) * np.sin(p)).to(u.m).value
-        pos_out[2] = (r * np.cos(t)).to(u.m).value
-
-    return pos_out
-
-
-class Tracker:
+class Tracker(PathIntegratedDiagnostic):
     r"""
     Represents a charged particle radiography experiment with simulated or
     calculated E and B fields given at positions defined by a grid of spatial
@@ -129,13 +84,9 @@ class Tracker:
         verbose=True,
     ):
 
-        # self.grid is the grid object
-        self.grid = grid
-        # self.grid_arr is the grid positions in si units. This is created here
-        # so that it isn't continously called later
-        self.grid_arr = grid.grid.to(u.m).value
-
-        self.verbose = verbose
+        super().__init__(
+            grid, source, detector, detector_hdir=detector_hdir, verbose=verbose
+        )
 
         # A list of wire meshes added to the grid with add_wire_mesh
         # Particles that would hit these meshes will be removed at runtime
@@ -145,53 +96,11 @@ class Tracker:
         # This flag records whether the simulation has been run
         self._has_run = False
 
-        # ************************************************************************
-        # Setup the source and detector geometries
-        # ************************************************************************
-
-        self.source = _coerce_to_cartesian_si(source)
-        self.detector = _coerce_to_cartesian_si(detector)
-        self._log(f"Source: {self.source} m")
-        self._log(f"Detector: {self.detector} m")
-
-        # Calculate normal vectors (facing towards the grid origin) for both
-        # the source and detector planes
-        self.src_n = -self.source / np.linalg.norm(self.source)
-        self.det_n = -self.detector / np.linalg.norm(self.detector)
-
-        # Vector directly from source to detector
-        self.src_det = self.detector - self.source
-
-        # Magnification
-        self.mag = 1 + np.linalg.norm(self.detector) / np.linalg.norm(self.source)
-        self._log(f"Magnification: {self.mag}")
-
-        # Check that source-detector vector actually passes through the grid
-        if not self.grid.vector_intersects(self.source * u.m, self.detector * u.m):
-            raise ValueError(
-                "The vector between the source and the detector "
-                "does not intersect the grid provided!"
-            )
-
         # Determine the angle above which particles will not hit the grid
         # these particles can be ignored until the end of the simulation,
         # then immediately advanced to the detector grid with their original
         # velocities
         self.max_theta_hit_grid = self._max_theta_hit_grid()
-
-        # ************************************************************************
-        # Define the detector plane
-        # ************************************************************************
-
-        # Load or calculate the detector hdir
-        if detector_hdir is not None:
-            self.det_hdir = detector_hdir / np.linalg.norm(detector_hdir)
-        else:
-            self.det_hdir = self._default_detector_hdir()
-
-        # Calculate the detector vdir
-        ny = np.cross(self.det_hdir, self.det_n)
-        self.det_vdir = -ny / np.linalg.norm(ny)
 
         # ************************************************************************
         # Validate the E and B fields
@@ -240,20 +149,6 @@ class Tracker:
                     RuntimeWarning,
                 )
 
-    def _default_detector_hdir(self):
-        """
-        Calculates the default horizontal unit vector for the detector plane
-        (see __init__ description for details)
-        """
-        # Create unit vectors that define the detector plane
-        # Define plane  horizontal axis
-        if np.allclose(np.abs(self.det_n), np.array([0, 0, 1])):
-            nx = np.array([1, 0, 0])
-        else:
-            nx = np.cross(np.array([0, 0, 1]), self.det_n)
-        nx = nx / np.linalg.norm(nx)
-        return nx
-
     def _max_theta_hit_grid(self):
         r"""
         Using the grid and the source position, compute the maximum particle
@@ -277,10 +172,6 @@ class Tracker:
                     )
                     ind += 1
         return np.max(theta)
-
-    def _log(self, msg):
-        if self.verbose:
-            print(msg)
 
     # Define some constants so they don't get constantly re-evaluated
     _c = const.c.si.value
@@ -354,7 +245,7 @@ class Tracker:
         # Raise an error if the run method has already been called.
         self._enforce_order()
 
-        location = _coerce_to_cartesian_si(location)
+        location = self._coerce_to_cartesian_si(location)
         wire_radius = wire_diameter.si.value / 2
 
         if not isinstance(extent, tuple):

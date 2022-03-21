@@ -11,6 +11,7 @@
    :caption: Sub-Packages & Modules
 
    charged_particle_radiography
+   path_integrated_diagnostic
    Swept Langmuir (will be deprecated) <langmuir>
    thomson
 
