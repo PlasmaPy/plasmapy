@@ -4,6 +4,7 @@ on:
 
 jobs:
   triage:
+    if: ${{ !(contains( github.event.pull_request_target.labels.*.name, 'GA Skip Labeler')) }}
     runs-on: ubuntu-latest
     steps:
     - name: Add Labels to PR
