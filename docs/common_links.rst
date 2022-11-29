@@ -14,6 +14,7 @@
 
 .. |CustomParticle| replace:: :class:`~plasmapy.particles.particle_class.CustomParticle`
 .. |DimensionlessParticle| replace:: :class:`~plasmapy.particles.particle_class.DimensionlessParticle`
+.. |Photon| replace:: :class:`~plasmapy.particles.particle_class.Photon`
 .. |IonicLevel| replace:: :class:`~plasmapy.particles.ionization_state.IonicLevel`
 .. |IonizationState| replace:: :class:`~plasmapy.particles.ionization_state.IonizationState`
 .. |IonizationStateCollection| replace:: :class:`~plasmapy.particles.ionization_state_collection.IonizationStateCollection`

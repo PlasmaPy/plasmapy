@@ -9,6 +9,7 @@ __all__ = [
     "DimensionlessParticle",
     "Particle",
     "ParticleLike",
+    "Photon",
     "molecule",
     "valid_categories",
 ]
@@ -20,6 +21,7 @@ import numpy as np
 import warnings
 
 from abc import ABC, abstractmethod
+from astropy.units.quantity import Quantity
 from collections import defaultdict, namedtuple
 from datetime import datetime
 from numbers import Integral, Real
@@ -2483,3 +2485,189 @@ argument or variable should represent a physical particle.
 >>> def is_electron(particle: ParticleLike):
 ...     return particle == Particle("e-")
 """
+
+
+class Photon(AbstractParticle):
+    """
+    A class to represent a photon.
+
+    Special case of an `~plasmapy.particles.particle_class.AbstractParticle`
+    with the mass, charge, charge number, spin and half-life hard-coded to
+    that of a photon.
+
+    Parameters
+    ----------
+    quantity : ~astropy.units.Quantity, optional
+        The defining parameter of a photon. It can be in the units of
+        energy, frequency, momentum or wavelength.
+
+    Raises
+    ------
+    ValueError
+        If ``quantity`` is either not of allowed type or negative.
+
+    See Also
+    --------
+    ~plasmapy.particles.particle_class.Particle
+
+    Notes
+    -----
+    If ``quantity`` is not specified, then the corresponding values of
+    energy, frequency, momentum and wavelength will be set to |nan| in
+    the appropriate units.
+
+    Examples
+    --------
+    We can use |Photon| to represent an
+    :wikipedia:`Lyman-α photon <Lyman-alpha line>` for the
+    transition of an electron from the :math:`n=2` orbital to the
+    :math:`n=1` ground state in a hydrogen atom, where :math:`n` is
+    the :wikipedia:`principal quantum number`.
+
+    >>> from astropy import units as u
+    >>> from plasmapy.particles import Photon
+    >>> photon = Photon(121.567 * u.nm)
+    >>> photon.wavelength
+    <Quantity 1.21567e-07 m>
+    >>> photon.energy
+    <Quantity 1.63403379e-18 J>
+    >>> photon.momentum
+    <Quantity 5.45055003e-27 J s / m>
+    >>> photon.frequency
+    <Quantity 2.46606775e+15 1 / s>
+    >>> photon.spin
+    """
+
+    def __init__(self, quantity: Quantity = None):
+        self._set_default_photon_properties()
+        if (quantity is not None) and (not self._validate_quantity(quantity)):
+            raise ValueError(
+                "Specify a positive quantity with units of energy, wavelength, frequency or momentum."
+            )
+
+        if quantity is None:
+            self.energy = None
+            self.frequency = None
+            self.momentum = None
+            self.wavelength = None
+        else:
+            if self._is_momentum(quantity):
+                self.momentum = quantity.to(u.kg * u.m / u.s)
+                self.wavelength = const.h / self.momentum
+                self.frequency = const.c / self.wavelength
+                self.energy = const.h * self.frequency
+            else:
+                self.energy = quantity.to(u.J, equivalencies=u.spectral())
+                self.frequency = quantity.to(u.s**-1, equivalencies=u.spectral())
+                self.wavelength = quantity.to(u.m, equivalencies=u.spectral())
+                self.momentum = const.h / self.wavelength
+
+    def _set_default_photon_properties(self):
+        """Set default properties of a |Photon|."""
+        self._mass = 0 * u.kg
+        self._charge = 0 * u.C
+        self._charge_number = 0
+        self._spin = 1
+        self._half_life = np.inf * u.s
+        self._categories = {"boson", "stable", "uncharged"}
+        self._allowed_units = dict(
+            {
+                "Energy": u.J,
+                "Wavelength": u.m,
+                "Frequency": u.s**-1,
+                "Momentum": u.kg * u.m / u.s,
+            }
+        )
+
+    def _validate_quantity(self, quantity: Quantity):
+        """
+        Check if the type of ``quantity`` is one of the ``_allowed_units`` and
+        validates it's a valid non negative |Quantity|.
+        """
+        allowed_physical_types = [
+            u.get_physical_type(x) for x in self._allowed_units.values()
+        ]
+        is_valid_quantity = quantity.unit.physical_type in allowed_physical_types
+        is_nonnegative_quantity = quantity.value > 0
+        return is_valid_quantity and is_nonnegative_quantity
+
+    def _isMomentum(self, quantity: Quantity):
+        """Check if the ``quantity`` is Momentum."""
+        return quantity.unit.physical_type == "momentum"
+
+    def categories(self) -> Set[str]:
+        """The categories of the |Photon|."""
+        return self._categories
+
+    @property
+    def mass(self) -> u.Kg:
+        """The mass of the |Photon| in kilograms."""
+        return self._mass
+
+    @property
+    def charge(self) -> u.C:
+        """The electric charge of the |Photon| in Coulombs."""
+        return self._charge
+
+    @property
+    def charge_number(self) -> Integral:
+        """The |Photon|'s electrical charge in units of the elementary charge."""
+        return self._charge_number
+
+    @property
+    def spin(self) -> Real:
+        """The intrinsic spin of the |Photon|."""
+        return self._spin
+
+    @property
+    def half_life(self) -> u.s:
+        """Half-life of the |Photon| in seconds."""
+        return self._half_life
+
+    @property
+    def energy(self) -> u.J:
+        """Energy of the |Photon| in joules."""
+        return self._energy
+
+    @energy.setter
+    def energy(self, new_energy):
+        if new_energy is None:
+            self._energy = np.nan * u.J
+        else:
+            self._energy = new_energy
+
+    @property
+    def frequency(self) -> (u.s**-1):
+        """Frequency of the |Photon| in hertz."""
+        return self._frequency
+
+    @frequency.setter
+    def frequency(self, new_frequency):
+        if new_frequency is None:
+            self._frequency = np.nan * (u.s**-1)
+        else:
+            self._frequency = new_frequency
+
+    @property
+    def momentum(self) -> (u.kg * u.m / u.s):
+        """Momentum of the |Photon| in SI units."""
+        return self._momentum
+
+    @momentum.setter
+    def momentum(self, new_momentum):
+        if new_momentum is None:
+            self._momentum = np.nan * (u.kg * u.m / u.s)
+        else:
+            self._momentum = new_momentum
+
+    @property
+    def wavelength(self) -> u.m:
+        """Wavelength of the |Photon| in meters."""
+        return self._wavelength
+
+    @wavelength.setter
+    def wavelength(self, new_wavelength):
+        if new_wavelength is None:
+            self._wavelength = np.nan * u.m
+        else:
+            self._wavelength = new_wavelength

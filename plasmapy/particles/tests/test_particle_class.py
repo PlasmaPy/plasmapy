@@ -28,6 +28,7 @@ from plasmapy.particles.particle_class import (
     CustomParticle,
     DimensionlessParticle,
     Particle,
+    Photon,
     valid_categories,
 )
 from plasmapy.utils import roman
@@ -1518,3 +1519,33 @@ def test_molecule_other():
         assert CustomParticle(2 * 126.90447 * u.u, e.si, "I2 1+") == molecule(
             "I2 1+", Z=1
         )
+
+
+def test_photon_creation():
+    """Test Photon creation with various quantities."""
+    p1 = Photon()
+    assert np.isnan(p1.energy)
+    assert np.isnan(p1.frequency)
+    assert np.isnan(p1.momentum)
+    assert np.isnan(p1.wavelength)
+    assert p1.mass == (0 * u.kg)
+    assert p1.charge == (0 * u.C)
+    assert p1.charge_number == 0
+    assert p1.spin == 1
+    assert p1.half_life == np.inf * u.s
+
+    with pytest.raises(ValueError):
+        p2 = Photon(10 * u.s)
+
+    frequency = 5 * (u.s**-1)
+    p3 = Photon(5 * u.Hz)
+    assert p3.energy == (const.h * frequency)
+    assert p3.wavelength == (const.c / frequency)
+    assert f"{p3.momentum.value:.5f}" == f"{(const.h * frequency / const.c).value:.5f}"
+
+    p4 = Photon(20 * u.nJ)
+    assert p4.energy == (20 * u.nJ).to(u.J)
+
+    momentum = 1 * u.kg * u.m / u.s
+    p5 = Photon(momentum)
+    assert p5.wavelength == (const.h / momentum)

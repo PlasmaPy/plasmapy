@@ -1,0 +1,1 @@
+Added the |Photon| class to `plasmapy.particles`.
