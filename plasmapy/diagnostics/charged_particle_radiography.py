@@ -12,6 +12,8 @@ __all__ = [
 
 import astropy.constants as const
 import astropy.units as u
+import concurrent.futures
+import copy
 import numpy as np
 import sys
 import warnings
@@ -857,19 +859,19 @@ class Tracker:
                 RuntimeWarning,
             )
 
-    def _push(self):
+    def _push(self, ind):
         r"""
         Advance particles using an implementation of the time-centered
-        Boris algorithm
+        Boris algorithm for thread at index ind
         """
         # Get a list of positions (input for interpolator)
-        pos = self.x[self.grid_ind, :] * u.m
+        pos = self.x_split[ind][self.grid_ind[ind], :] * u.m
 
         # Update the list of particles on and off the grid
-        self.on_grid = self.grid.on_grid(pos)
+        self.on_grid[ind] = self.grid.on_grid(pos)
         # entered_grid is zero at the end if a particle has never
         # entered the grid
-        self.entered_grid += self.on_grid
+        self.entered_grid[ind] += self.on_grid[ind]
 
         # Estimate the E and B fields for each particle
         # Note that this interpolation step is BY FAR the slowest part of the push
@@ -921,39 +923,41 @@ class Tracker:
         # TODO: Test v/c and implement relativistic Boris push when required
         # vc = np.max(v)/_c
 
-        x = self.x[self.grid_ind, :]
-        v = self.v[self.grid_ind, :]
-        boris_push(x, v, B, E, self.q, self.m, dt)
-        self.x[self.grid_ind, :] = x
-        self.v[self.grid_ind, :] = v
+        x_split = self.x_split[ind][self.grid_ind[ind], :]
+        v = self.v_split[ind][self.grid_ind[ind], :]
+        boris_push(x_split, v, B, E, self.q, self.m, dt)
+        self.x_split[ind][self.grid_ind[ind], :] = x_split
+        self.v_split[ind][self.grid_ind[ind], :] = v
 
-    def _stop_condition(self):
+    def _stop_condition(self, ind):
         r"""
         The stop condition is that most of the particles have entered the grid
         and almost all have now left it.
         """
         # Count the number of particles who have entered, which is the
         # number of non-zero entries in entered_grid
-        self.num_entered = np.nonzero(self.entered_grid)[0].size
+        self.num_entered[ind] = np.nonzero(self.entered_grid[ind])[0].size
 
         # How many of the particles have entered the grid
-        self.fract_entered = np.sum(self.num_entered) / self.nparticles_grid
+        self.fract_entered[ind] = (
+            np.sum(self.num_entered[ind]) / self.nparticles_grid_arr[ind]
+        )
 
         # Of the particles that have entered the grid, how many are currently
         # on the grid?
         # if/else avoids dividing by zero
-        if np.sum(self.num_entered) > 0:
-            still_on = np.sum(self.on_grid) / np.sum(self.num_entered)
+        if np.sum(self.num_entered[ind]) > 0:
+            still_on = np.sum(self.on_grid[ind]) / np.sum(self.num_entered[ind])
         else:
             still_on = 0.0
 
-        if self.fract_entered <= 0.1 or still_on >= 0.001:
+        if self.fract_entered[ind] <= 0.1 or still_on >= 0.001:
             return False
 
         # Warn user if < 10% of the particles ended up on the grid
-        if self.num_entered < 0.1 * self.nparticles:
+        if self.num_entered[ind] < 0.1 * self.nparticles:
             warnings.warn(
-                f"Only {100*self.num_entered/self.nparticles:.2f}% of "
+                f"Only {100*self.num_entered[ind]/self.nparticles_grid_arr[ind]:.2f}% of "
                 "particles entered the field grid: consider "
                 "decreasing the max_theta to increase this "
                 "number.",
@@ -961,6 +965,91 @@ class Tracker:
             )
 
         return True
+
+    def _thread_run(self, ind):
+        r"""
+        Runs a thread on input section number ind.
+        returns when the thread is completed running.
+        """
+        while not self._stop_condition(ind):
+            self._push(ind)
+        return True
+
+    def _split_input(self, num_threads):
+        r"""
+        Divides member variables required for each thread into NUM_THREAD
+        partitions.
+        Returns values required for later merging values back
+        into their original state.
+        """
+
+        # x and v need to be padded in order for np.array_split
+        # to behave consistently. num_x_append and num_v_append
+        # are used later to recombine the slices correctly.
+        self.x_split = copy.copy(self.x)
+        num_x_append = 0
+        while self.x_split.size % num_threads != 0:
+            num_x_append += 1
+            self.x_split = np.append(self.x_split, [(0, 0, 0)], axis=0)
+        self.x_split = np.array_split(self.x_split, num_threads)
+
+        self.v_split = copy.copy(self.v)
+        num_v_append = 0
+        while self.v_split.size % num_threads != 0:
+            num_v_append += 1
+            self.v_split = np.append(self.v_split, [(0, 0, 0)], axis=0)
+        self.v_split = np.array_split(self.v_split, num_threads)
+
+        self.num_entered = [None] * num_threads
+
+        self.fract_entered = [None] * num_threads
+
+        self.nparticles_arr = [None] * num_threads
+
+        grid_ind = [None] * num_threads
+
+        self.nparticles_grid_arr = [None] * num_threads
+
+        self.entered_grid = [None] * num_threads
+        self.on_grid = [None] * num_threads
+
+        lower_sum = 0
+        for i in range(num_threads):
+            self.nparticles_arr[i] = len(self.x_split[i])
+            grid_ind[i] = [
+                x - lower_sum
+                for x in self.grid_ind_orig
+                if x >= lower_sum and x < (lower_sum + len(self.x_split[i]))
+            ]
+            lower_sum += len(self.x_split[i])
+            self.nparticles_grid_arr[i] = len(grid_ind[i])
+            self.entered_grid[i] = np.zeros([self.nparticles_grid_arr[i]])
+            self.on_grid[i] = np.zeros([self.nparticles_grid_arr[i]])
+
+        self.grid_ind = grid_ind
+
+        return num_x_append, num_v_append
+
+    def _recombine_input(self, num_x_append, num_v_append):
+        r"""
+        Recombines divided member variables and stores them how they were
+        before they were split.
+        """
+
+        self.x = np.concatenate(self.x_split)
+        self.x = self.x[: len(self.x) - num_x_append]
+
+        self.v = np.concatenate(self.v_split)
+        self.v = self.v[: len(self.v) - num_v_append]
+
+        self.grid_ind = self.grid_ind_orig
+
+        self.nparticles_grid = self.nparticles_grid_orig
+
+        self.entered_grid = np.concatenate(self.entered_grid)
+        self.on_grid = np.concatenate(self.on_grid)
+
+        self.fract_entered = sum(self.fract_entered)
 
     def run(
         self,
@@ -1041,15 +1130,16 @@ class Tracker:
         # Determine which particles should be tracked
         # This array holds the indices of all particles that WILL hit the grid
         # Only these particles will actually be pushed through the fields
-        self.grid_ind = np.where(self.theta < self.max_theta_hit_grid)[0]
-        self.nparticles_grid = len(self.grid_ind)
-        self.fract_tracked = self.nparticles_grid / self.nparticles
+        # Original versions made to be restored to after simulation
+        self.grid_ind_orig = np.where(self.theta < self.max_theta_hit_grid)[0]
+        self.nparticles_grid_orig = len(self.grid_ind_orig)
+        self.fract_tracked = self.nparticles_grid_orig / self.nparticles
 
         # Create flags for tracking when particles during the simulation
         # on_grid -> zero if the particle is off grid, 1
-        self.on_grid = np.zeros([self.nparticles_grid])
+        self.on_grid = np.zeros([self.nparticles_grid_orig])
         # Entered grid -> non-zero if particle EVER entered the grid
-        self.entered_grid = np.zeros([self.nparticles_grid])
+        self.entered_grid = np.zeros([self.nparticles_grid_orig])
 
         # Generate a null distribution of points (the result in the absence of
         # any fields) for statistical comparison
@@ -1058,28 +1148,48 @@ class Tracker:
         # Advance the particles to the near the start of the grid
         self._coast_to_grid()
 
+        # TODO: reinstate progress bar
+        # It is unclear how to correctly update progress bar with
+        # multiple threads. Below is the original progress bar init code
+        #
         # Initialize a "progress bar" (really more of a meter)
         # Setting sys.stdout lets this play nicely with regular print()
-        pbar = tqdm(
-            initial=0,
-            total=self.nparticles_grid + 1,
-            disable=not self.verbose,
-            desc="Particles on grid",
-            unit="particles",
-            bar_format="{l_bar}{bar}{n:.1e}/{total:.1e} {unit}",
-            file=sys.stdout,
-        )
+        # pbar = tqdm(
+        #     initial=0,
+        #     total=self.nparticles_grid_orig + 1,
+        #     disable=not self.verbose,
+        #     desc="Particles on grid",
+        #     unit="particles",
+        #     bar_format="{l_bar}{bar}{n:.1e}/{total:.1e} {unit}",
+        #     file=sys.stdout,
+        # )
+        # Below is the update code for the progress bar from the original
+        # loop
+        # n_on_grid = np.sum(self.on_grid)
+        # pbar.n = n_on_grid
+        # pbar.last_print_n = n_on_grid
+        # pbar.update()
 
-        # Push the particles until the stop condition is satisfied
-        # (no more particles on the simulation grid)
-        while not self._stop_condition():
-            n_on_grid = np.sum(self.on_grid)
-            pbar.n = n_on_grid
-            pbar.last_print_n = n_on_grid
-            pbar.update()
+        # Defines number of threads to be created and runs
+        NUM_THREADS = 2
 
-            self._push()
-        pbar.close()
+        # Split all variables into NUM_THREADS copies in order
+        # for each thread to have its own variable to keep track of.
+        num_x_append, num_v_append = self._split_input(NUM_THREADS)
+
+        # Create NUM_THREADS threads and starts them all
+        threads = [None] * NUM_THREADS
+
+        with concurrent.futures.ThreadPoolExecutor(max_workers=NUM_THREADS) as executor:
+            for i in range(NUM_THREADS):
+                threads[i] = executor.submit(self._thread_run, i)
+
+            # Waits for all threads to return before continuing
+            for i in range(NUM_THREADS):
+                threads[i].result()
+
+        # Recombine split up variables
+        self._recombine_input(num_x_append, num_v_append)
 
         # Remove particles that will never reach the detector
         self._remove_deflected_particles()
@@ -1332,7 +1442,7 @@ def synthetic_radiograph(
 
     Returns
     -------
-    hax : `~astropy.units.Quantity` array shape ``(hbins,)``
+    hex : `~astropy.units.Quantity` array shape ``(hbins,)``
         The horizontal axis of the synthetic radiograph in meters.
 
     vax : `~astropy.units.Quantity` array shape ``(vbins, )``

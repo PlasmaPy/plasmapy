@@ -1,0 +1,4 @@
+Modified The Tracker class in ~plasmapy.diagnostics.charged_particle_radiography.py
+to split particle array up and run each section in parallel.
+Also added extremely large test cases to test speed of parallel solution; commented
+them out as to not slow down the test suite.

@@ -873,3 +873,75 @@ def test_add_wire_mesh():
 
     # Verify that the spacing is correct by checking the FFT
     assert np.isclose(measured_spacing, true_spacing, 0.5)
+
+
+# @pytest.mark.slow
+# def test_load_particles_large():
+#     """
+#     Tests performance on a large example
+#     """
+
+#     grid = _test_grid("electrostatic_gaussian_sphere", num=200)
+
+#     # Cartesian
+#     source = (0 * u.mm, -10 * u.mm, 0 * u.mm)
+#     detector = (0 * u.mm, 200 * u.mm, 0 * u.mm)
+
+#     sim = cpr.Tracker(grid, source, detector, verbose=False)
+#     sim.create_particles(1e6, 15 * u.MeV, max_theta=0.1 * u.rad, distribution="uniform")
+
+#     # Test adding unequal numbers of particles
+#     x = np.zeros([100, 3]) * u.m
+#     v = np.ones([150, 3]) * u.m / u.s
+#     with pytest.raises(ValueError):
+#         sim.load_particles(x, v)
+
+#     # Test creating particles with explicit keywords
+#     x = sim.x * u.m
+#     v = sim.v * u.m / u.s
+
+#     # Try setting particles going the wrong direction
+#     with pytest.warns(RuntimeWarning):
+#         sim.load_particles(x, -v)
+
+#     # Try specifying a larger ion (not a proton or electron)
+#     sim.load_particles(x, v, particle="C-12 +3")
+
+#     # Run the tracker to make sure everything works
+#     sim.run(field_weighting="nearest neighbor")
+
+
+# @pytest.mark.slow
+# def test_load_particles_large():
+#     """
+#     Tests performance on an extremely large example
+#     """
+
+#     grid = _test_grid("electrostatic_gaussian_sphere", num=400)
+
+#     # Cartesian
+#     source = (0 * u.mm, -10 * u.mm, 0 * u.mm)
+#     detector = (0 * u.mm, 200 * u.mm, 0 * u.mm)
+
+#     sim = cpr.Tracker(grid, source, detector, verbose=False)
+#     sim.create_particles(1e7, 15 * u.MeV, max_theta=0.1 * u.rad, distribution="uniform")
+
+#     # Test adding unequal numbers of particles
+#     x = np.zeros([100, 3]) * u.m
+#     v = np.ones([150, 3]) * u.m / u.s
+#     with pytest.raises(ValueError):
+#         sim.load_particles(x, v)
+
+#     # Test creating particles with explicit keywords
+#     x = sim.x * u.m
+#     v = sim.v * u.m / u.s
+
+#     # Try setting particles going the wrong direction
+#     with pytest.warns(RuntimeWarning):
+#         sim.load_particles(x, -v)
+
+#     # Try specifying a larger ion (not a proton or electron)
+#     sim.load_particles(x, v, particle="C-12 +3")
+
+#     # Run the tracker to make sure everything works
+#     sim.run(field_weighting="nearest neighbor")
