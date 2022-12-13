@@ -1,0 +1,30 @@
+name: Setup environment for testing
+
+inputs:
+  python-version:
+    required: true
+    type: string
+  operating-system:
+    required: false
+    type: string
+    default: ubuntu-latest
+  dependencies:
+    required: false
+    type: string
+    default: tox
+
+
+runs:
+  using: composite
+  steps:
+  - name: Checkout code
+    uses: actions/checkout@v3
+    with:
+      fetch-depth: 0
+  - name: Set up Python
+    uses: actions/setup-python@v4
+    with:
+      python-version: ${{ inputs.python-version }}
+  - name: Install Python dependencies
+    run: python3 -m pip install --progress-bar off --upgrade ${{ inputs.dependencies }}
+    shell: bash -el {0}

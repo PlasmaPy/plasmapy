@@ -1,9 +1,16 @@
-name: Add comment
-
+name: Actions on new PR
 on:
 - pull_request_target
 
 jobs:
+  triage:
+    runs-on: ubuntu-latest
+    steps:
+    - name: Add Labels to PR
+      uses: actions/labeler@main
+      with:
+        repo-token: ${{ secrets.GITHUB_TOKEN }}
+        sync-labels: true
   greeting:
     name: Welcome message
     runs-on: ubuntu-latest

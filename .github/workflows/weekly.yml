@@ -76,17 +76,15 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - uses: ./.github/actions/prepare_env
       with:
         python-version: ${{ matrix.python }}
-    - name: Install Python dependencies
-      run: python -m pip install --upgrade tox codecov
+        dependencies: tox codecov
     - name: Install language-pack-fr and tzdata
       if: startsWith(matrix.name, 'Documentation')
       run: sudo apt-get install graphviz pandoc
     - name: Run tests
-      run: tox ${{ matrix.toxargs }} -e ${{ matrix.toxenv }} -- ${{ matrix.toxposargs }}
+      run: python -m tox ${{ matrix.toxargs }} -e ${{ matrix.toxenv }} -- ${{ matrix.toxposargs }}
     - name: Upload coverage to codecov
       if: ${{ contains(matrix.toxenv,'-cov') }}
       uses: codecov/codecov-action@v3

@@ -35,14 +35,13 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - uses: ./.github/actions/prepare_env
       with:
         python-version: ${{ matrix.python }}
-    - name: Install Python dependencies
-      run: python -m pip install --progress-bar off --upgrade tox codecov
+        dependencies: tox codecov
     - name: Run tests
-      run: tox ${{ matrix.toxargs }} -e ${{ matrix.toxenv }} -- ${{ matrix.toxposargs }}
+      run: python3 -m tox ${{ matrix.toxargs }} -e ${{ matrix.toxenv }} -- ${{ matrix.toxposargs }}
+
   comprehensive-tests:
     name: ${{ matrix.name }}
     runs-on: ${{ matrix.os }}
@@ -84,17 +83,15 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - uses: ./.github/actions/prepare_env
       with:
         python-version: ${{ matrix.python }}
-    - name: Install Python dependencies
-      run: python -m pip install --progress-bar off --upgrade tox codecov
+        dependencies: tox codecov
     - name: Install language-pack-fr and tzdata
       if: startsWith(matrix.name, 'Documentation')
       run: sudo apt-get install graphviz pandoc
     - name: Run tests
-      run: tox ${{ matrix.toxargs }} -e ${{ matrix.toxenv }} -- ${{ matrix.toxposargs }}
+      run: python3 -m tox ${{ matrix.toxargs }} -e ${{ matrix.toxenv }} -- ${{ matrix.toxposargs }}
     - name: Upload coverage to codecov
       if: ${{ contains(matrix.toxenv,'-cov') }}
       uses: codecov/codecov-action@v3
@@ -111,16 +108,13 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - uses: ./.github/actions/prepare_env
       with:
         python-version: 3.8
-    - name: Install Python dependencies
-      run: python -m pip install --progress-bar off --upgrade tox
     - name: Install language-pack-fr and tzdata
       run: sudo apt-get install graphviz pandoc
     - name: Run tests
-      run: tox -e build_docs -- -q
+      run: python3 -m tox -e build_docs -- -q
 
   codespell:
     name: codespell
@@ -132,14 +126,11 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - uses: ./.github/actions/prepare_env
       with:
-        python-version: 3.9
-    - name: Install Python dependencies
-      run: python -m pip install --progress-bar off --upgrade tox
+        python-version: 3.8
     - name: Run tests
-      run: tox -e codespell -q
+      run: python3 -m tox -e codespell -q
 
   import-plasmapy:
     name: Importing PlasmaPy
@@ -151,14 +142,11 @@ jobs:
       uses: actions/checkout@v3
       with:
         fetch-depth: 0
-    - name: Set up Python
-      uses: actions/setup-python@v4
+    - uses: ./.github/actions/prepare_env
       with:
         python-version: 3.8
-    - name: Install Python dependencies
-      run: python -m pip install --progress-bar off --upgrade tox
     - name: Import PlasmaPy
-      run: tox -e py38-minimal-pypi-import
+      run: python3 -m tox -e py38-minimal-pypi-import
 
   build-n-publish:
     name: Packaging
@@ -170,18 +158,18 @@ jobs:
     - codespell
     - import-plasmapy
     steps:
-    - uses: actions/checkout@v3
+    - name: Checkout code
+      uses: actions/checkout@v3
+      with:
+        fetch-depth: 0
+    - uses: ./.github/actions/prepare_env
+      with:
+        python-version: 3.8
+        dependencies: setuptools numpy wheel setuptools_scm twine build pip
     - name: Get history and tags for SCM versioning to work
       run: |
         git fetch --prune --unshallow
         git fetch --depth=1 origin +refs/tags/*:refs/tags/*
-    - name: Set up Python 3.8
-      uses: actions/setup-python@v4
-      with:
-        python-version: 3.8
-    - name: Install requirements
-      run: |
-        pip install --progress-bar off setuptools numpy wheel setuptools_scm twine build pip
     - name: Build a source tarball
       run: python -m build --sdist --outdir dist/
     - name: Build a binary wheel
