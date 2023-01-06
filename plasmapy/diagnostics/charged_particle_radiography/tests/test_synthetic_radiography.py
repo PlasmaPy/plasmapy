@@ -1,9 +1,9 @@
 """
 Tests for proton radiography functions
 """
-
 import astropy.units as u
 import numpy as np
+import os
 import pytest
 
 from scipy.special import erf
@@ -12,6 +12,7 @@ from plasmapy.diagnostics.charged_particle_radiography import (
     synthetic_radiography as cpr,
 )
 from plasmapy.plasma.grids import CartesianGrid
+from plasmapy.utils.data import downloader
 
 
 def _test_grid(
@@ -927,3 +928,139 @@ def test_multiple_grids2():
     ax.set_aspect('equal')
     ax.pcolormesh(hax.to(u.cm).value, vax.to(u.cm).value, values.T)
     """
+
+
+def test_proton_scattering():
+    """
+    Test proton scattering
+    """
+
+    # grid = _test_grid("dense_cylinder", L=0.5 * u.mm, num=200, rho0=1e3*u.kg/u.m**3)
+    rho0 = 1e3 * u.kg / u.m**3
+    energy = 15 * u.MeV
+
+    # Create the cylinder
+    grid1 = CartesianGrid(
+        [-0.5 * u.mm, -0.5 * u.mm, -1.5 * u.mm],
+        [0.5 * u.mm, 0.5 * u.mm, 1.5 * u.mm],
+        num=(200, 200, 50),
+    )
+
+    a = 290 * u.um
+    b = a - 20 * u.um
+    radius = np.linalg.norm(grid1.grid[..., 0:2], axis=3)
+
+    rho = np.where(np.logical_and(radius < a, radius > b), rho0, 0 * u.kg / u.m**3)
+    grid1.add_quantities(rho=rho)
+
+    # Create the coils
+    rho0 = 1e5 * u.kg / u.m**3
+    grid2 = CartesianGrid(
+        [-2.5 * u.mm, -2.5 * u.mm, -5 * u.mm],
+        [2.5 * u.mm, 2.5 * u.mm, 5 * u.mm],
+        num=(100, 100, 100),
+    )
+
+    radius = np.linalg.norm(grid2.grid[..., 0:2], axis=3)
+    z = grid2.grid[..., 2]
+    rho = 1e3 * u.kg / u.m**3
+
+    # Create a cylinder
+    rho = np.where(radius < 2.3 * u.mm, rho0, 0 * u.kg / u.m**3)
+    # Cut out the center
+    rho = np.where(np.abs(z) < 2.125 * u.mm, 0 * u.kg / u.m**3, rho)
+    grid2.add_quantities(rho=rho)
+
+    grids = [grid1, grid2]
+
+    mass_L_rad = [63.04 * u.g / u.cm**2] * 2
+
+    source = (-11 * u.mm, (90 - 26.57) * u.deg, 0 * u.deg)
+    detector = (270 * u.mm, (90 - 26.57) * u.deg, 0 * u.deg)
+
+    sim = cpr.Tracker(grids, source, detector, verbose=True, mass_L_rad=mass_L_rad)
+
+    sim.create_particles(1e4, energy, max_theta=12 * u.deg)
+
+    sim.run(field_weighting="nearest neighbor")
+
+    size = np.array([[-1, 1], [-1, 1]]) * 5 * u.cm
+    bins = [150, 150]
+    hax, vax, values = cpr.synthetic_radiograph(sim, size=size, bins=bins)
+
+    mag = 1 + 270 / 11
+
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots()
+    ax.set_aspect("equal")
+    ax.pcolormesh(hax.to(u.mm).value / mag, vax.to(u.mm).value / mag, values.T)
+    ax.set_xlabel("X (mm, obj)")
+    ax.set_ylabel("Y (mm, obj)")
+    ax.set_title(f"{energy}")
+
+
+def test_particle_stopping():
+
+    # Create the cylinder
+    grid1 = CartesianGrid(
+        [-0.5 * u.mm, -0.5 * u.mm, -1.5 * u.mm],
+        [0.5 * u.mm, 0.5 * u.mm, 1.5 * u.mm],
+        num=(200, 200, 50),
+    )
+    rho0 = 1e6 * u.kg / u.m**3
+    a = 290 * u.um
+    radius = np.linalg.norm(grid1.grid[..., 0:2], axis=3)
+
+    rho = np.where(radius < a, rho0, 0 * u.kg / u.m**3)
+    grid1.add_quantities(rho=rho)
+
+    source = (-11 * u.mm, (90 - 26.57) * u.deg, 0 * u.deg)
+    detector = (270 * u.mm, (90 - 26.57) * u.deg, 0 * u.deg)
+
+    aluminum_path = downloader.get_file(
+        "NIST_PSTAR_aluminum.txt", directory=os.getcwd()
+    )
+    arr = np.loadtxt(aluminum_path, skiprows=8)
+    eaxis = arr[:, 0] * u.MeV
+    mass_stopping_power = arr[:, 1] * u.MeV * u.cm**2 / u.g
+
+    mass_stopping_power = (eaxis, mass_stopping_power)
+
+    sim = cpr.Tracker(
+        [
+            grid1,
+        ],
+        source,
+        detector,
+        verbose=True,
+        mass_stopping_power=mass_stopping_power,
+    )
+
+    sim.create_particles(1e4, 15 * u.MeV, max_theta=12 * u.deg)
+
+    sim.run(field_weighting="nearest neighbor")
+
+    size = np.array([[-1, 1], [-1, 1]]) * 5 * u.cm
+    bins = [150, 150]
+    hax, vax, values = cpr.synthetic_radiograph(sim, size=size, bins=bins)
+
+    mag = 1 + 270 / 11
+
+    import matplotlib.pyplot as plt
+
+    fig, ax = plt.subplots()
+    ax.set_aspect("equal")
+    ax.pcolormesh(hax.to(u.mm).value / mag, vax.to(u.mm).value / mag, values.T)
+    ax.set_xlabel("X (mm, obj)")
+    ax.set_ylabel("Y (mm, obj)")
+
+
+if __name__ == "__main__":
+    # test_input_validation()
+    # test_run_options()
+    # run_mesh_example()
+    # test_add_wire_mesh()
+    # test_multiple_grids()
+    test_proton_scattering()
+    # test_particle_stopping()

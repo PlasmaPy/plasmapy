@@ -14,6 +14,7 @@ import numpy as np
 import sys
 import warnings
 
+from numba import njit
 from tqdm import tqdm
 from typing import Iterable, Union
 
@@ -22,6 +23,18 @@ from plasmapy.formulary.mathematics import rot_a_to_b
 from plasmapy.particles import Particle
 from plasmapy.plasma.grids import AbstractGrid
 from plasmapy.simulation.particle_integrators import boris_push
+
+
+@njit
+def draw_from_normal(sigmas):
+    """
+    Draw samples from a set of normal distributions where each
+    distribution has a different standard deviation.
+    """
+    output = np.zeros(sigmas.size)
+    for i in range(sigmas.size):
+        output[i] = np.random.normal(loc=0, scale=sigmas[i])
+    return output
 
 
 def _coerce_to_cartesian_si(pos):
@@ -117,9 +130,37 @@ class Tracker:
         to be orthogonal to both the source-to-detector vector and the
         detector horizontal axis.
 
+    mass_L_rad : `~astropy.units.Quantity` or list of same, shape [ngrids,], optional
+        The radiation length for the grid mass density material. Units must
+        be convertable to kg/m^2. If `None` is provided for a given grid,
+        scattering will not be calculated on that grid.
+        If multiple grids are given, one value must be provided for each grid.
+        The default value is None, corresponding to no particle scattering
+        in that grid.
+
+
+    mass_stopping_power : tuple or list of same, shape [ngrids,], optional
+        Each tuple should contain two elements: an energy axis in units
+        convertable to J and the mass stopping power for the grid mass
+        density material convertable to J m^2/kg. If `None` is provided for a
+        given grid, particle stopping will not be calculated on that grid.
+        If multiple grids are given, one value must be provided for each grid.
+
+
     verbose : bool, optional
         If true, updates on the status of the program will be printed
         into the standard output while running.
+
+    Notes
+    -----
+
+    Tabluated radiation lengths can be found here:
+        https://pdg.lbl.gov/2022/AtomicNuclearProperties/index.html
+
+    Tablulated proton and electron stopping power curves can be found here:
+        https://physics.nist.gov/PhysRefData/Star/Text/PSTAR.html
+        https://physics.nist.gov/PhysRefData/Star/Text/ESTAR.html
+
     """
 
     def __init__(
@@ -128,6 +169,8 @@ class Tracker:
         source: u.m,
         detector: u.m,
         detector_hdir=None,
+        mass_L_rad: [u.kg / u.m**2, list] = None,
+        mass_stopping_power: [tuple, list] = None,
         verbose=True,
     ):
 
@@ -140,6 +183,73 @@ class Tracker:
             self.grids = grids
         else:
             raise TypeError("Type of argument `grids` not recognized.")
+
+        if isinstance(mass_L_rad, u.Quantity):
+            mass_L_rad = [
+                mass_L_rad,
+            ]
+
+        if isinstance(mass_L_rad, list):
+            self.mass_L_rad = mass_L_rad
+
+            if len(self.mass_L_rad) != len(self.grids):
+                raise ValueError(
+                    "The size of mass_L_rad "
+                    f"({len(self.mass_L_rad)}) must match the "
+                    f"number of grids ({len(self.grids)})."
+                )
+        elif mass_L_rad is None:
+            self.mass_L_rad = None
+        else:
+            raise TypeError("Type of argument `mass_L_rad` not recognized.")
+
+        if isinstance(mass_stopping_power, tuple):
+            mass_stopping_power = [
+                mass_stopping_power,
+            ]
+
+        if isinstance(mass_stopping_power, list):
+            for elem in mass_stopping_power:
+
+                if len(mass_stopping_power) != len(self.grids):
+                    raise ValueError(
+                        "The size of the mass_stopping_power list "
+                        f"({len(mass_stopping_power)}) must match the "
+                        f"number of grids ({len(self.grids)})."
+                    )
+
+                if len(elem) != 2:
+                    raise ValueError(
+                        "All tuples in the mass_stopping_power"
+                        "list must have two elements."
+                    )
+                if not elem[0].unit.is_equivalent(u.J):
+                    raise ValueError(
+                        "First element of each tuple in the "
+                        "mass_stopping_power list must be an"
+                        "axis with units of energy."
+                    )
+
+                if not elem[1].unit.is_equivalent(u.J * u.m**2 / u.kg):
+                    raise ValueError(
+                        "Second element of each tuple in the "
+                        "mass_stopping_power list must be an"
+                        "axis with units convertable to "
+                        "J m^2/kg."
+                    )
+
+                if elem[0].size != elem[1].size:
+                    raise ValueError(
+                        "The energy axis and stopping power arrays "
+                        "must have equal size."
+                    )
+
+            self.mass_stopping_power = mass_stopping_power
+
+        elif mass_stopping_power is None:
+            self.mass_stopping_power = None
+        else:
+            raise TypeError("Type of argument `mass_stopping_power` not recognized.")
 
         # self.grid_arr is the grid positions in si units. This is created here
         # so that it isn't continuously called later
@@ -211,7 +321,7 @@ class Tracker:
         # Validate the E and B fields
         # *********************************************************************
 
-        req_quantities = ["E_x", "E_y", "E_z", "B_x", "B_y", "B_z"]
+        req_quantities = ["E_x", "E_y", "E_z", "B_x", "B_y", "B_z", "rho"]
 
         for grid in self.grids:
             grid.require_quantities(req_quantities, replace_with_zeros=True)
@@ -512,12 +622,9 @@ class Tracker:
                 f"The wire diameter ({2*wire_radius}) may be too large."
             )
 
-        self.x = self.x[keep_these_particles, :]
-        self.v = self.v[keep_these_particles, :]
-        self.theta = self.theta[
-            keep_these_particles
-        ]  # Important to apply here to get correct grid_ind
-        self.nparticles = number_kept_particles
+        # Identify the particles that have hit something, then remove them from
+        # all of the arrays
+        self._remove_particles(hit)
 
     # *************************************************************************
     # Particle creation methods
@@ -768,7 +875,7 @@ class Tracker:
 
         # candidate timesteps includes one per grid (based on the grid resolution)
         # plus additional candidates based on the field at each particle
-        candidates = np.ones([self.nparticles_grid, self.num_grids + 1]) * np.inf
+        candidates = np.ones([self._num_tracked, self.num_grids + 1]) * np.inf
 
         # Compute the timestep indicated by the grid resolution
         ds = np.array([grid.grid_resolution.to(u.m).value for grid in self.grids])
@@ -876,18 +983,12 @@ class Tracker:
         # away from it, they will never reach the detector.
         # So, we can remove them from the arrays
 
-        # Find the indices of all particles that we should keep:
-        # i.e. those still moving towards the detector.
-        ind = np.logical_not((v_towards_det < 0) & (dist_remaining > 0)).nonzero()[0]
-
-        # Drop the other particles
-        self.x = self.x[ind, :]
-        self.v = self.v[ind, :]
-        self.v_init = self.v_init[ind, :]
-        self.nparticles_grid = self.x.shape[0]
+        # Find the indices of all particles that we should remove
+        to_remove = (v_towards_det < 0) & (dist_remaining > 0)
+        self._remove_particles(to_remove)
 
         # Store the number of particles deflected
-        self.fract_deflected = (self.nparticles - ind.size) / self.nparticles
+        self.fract_deflected = np.sum(to_remove) / self.nparticles
 
         # Warn the user if a large number of particles are being deflected
         if self.fract_deflected > 0.05:
@@ -905,7 +1006,7 @@ class Tracker:
         Boris algorithm
         """
         # Get a list of positions (input for interpolator)
-        pos = self.x[self.grid_ind, :] * u.m
+        pos = self.x[self._track_ind, :] * u.m
 
         # Update the list of particles on and off the grid
         # shape [nparticles, ngrids]
@@ -915,18 +1016,33 @@ class Tracker:
         # entered any grid
         self.entered_grid += np.sum(self.on_grid, axis=-1)
 
-        Ex = np.zeros(self.nparticles_grid) * u.V / u.m
-        Ey = np.zeros(self.nparticles_grid) * u.V / u.m
-        Ez = np.zeros(self.nparticles_grid) * u.V / u.m
-        Bx = np.zeros(self.nparticles_grid) * u.T
-        By = np.zeros(self.nparticles_grid) * u.T
-        Bz = np.zeros(self.nparticles_grid) * u.T
-        for grid in self.grids:
+        Ex = np.zeros(self._num_tracked) * u.V / u.m
+        Ey = np.zeros(self._num_tracked) * u.V / u.m
+        Ez = np.zeros(self._num_tracked) * u.V / u.m
+        Bx = np.zeros(self._num_tracked) * u.T
+        By = np.zeros(self._num_tracked) * u.T
+        Bz = np.zeros(self._num_tracked) * u.T
+
+        # Radiation length - used for computing scattering
+        L_rad = np.zeros([self._num_tracked, len(self.grids)]) * u.m
+
+        # Mass density per layer - used for computing absorption
+        _rho = np.zeros([self._num_tracked, len(self.grids)]) * u.kg / u.m**3
+
+        for i, grid in enumerate(self.grids):
             # Estimate the E and B fields for each particle
             # Note that this interpolation step is BY FAR the slowest part of the push
             # loop. Any speed improvements will have to come from here.
             if self.field_weighting == "volume averaged":
-                _Ex, _Ey, _Ez, _Bx, _By, _Bz = grid.volume_averaged_interpolator(
+                (
+                    _Ex,
+                    _Ey,
+                    _Ez,
+                    _Bx,
+                    _By,
+                    _Bz,
+                    _rho[:, i],
+                ) = grid.volume_averaged_interpolator(
                     pos,
                     "E_x",
                     "E_y",
@@ -934,10 +1050,19 @@ class Tracker:
                     "B_x",
                     "B_y",
                     "B_z",
+                    "rho",
                     persistent=True,
                 )
             elif self.field_weighting == "nearest neighbor":
-                _Ex, _Ey, _Ez, _Bx, _By, _Bz = grid.nearest_neighbor_interpolator(
+                (
+                    _Ex,
+                    _Ey,
+                    _Ez,
+                    _Bx,
+                    _By,
+                    _Bz,
+                    _rho[:, i],
+                ) = grid.nearest_neighbor_interpolator(
                     pos,
                     "E_x",
                     "E_y",
@@ -945,6 +1070,7 @@ class Tracker:
                     "B_x",
                     "B_y",
                     "B_z",
+                    "rho",
                     persistent=True,
                 )
 
@@ -956,6 +1082,7 @@ class Tracker:
             _Bx = np.nan_to_num(_Bx, nan=0.0 * u.T)
             _By = np.nan_to_num(_By, nan=0.0 * u.T)
             _Bz = np.nan_to_num(_Bz, nan=0.0 * u.T)
+            _rho[:, i] = np.nan_to_num(_rho[:, i], nan=0.0 * u.kg / u.m**3)
 
             # Add the values interpolated for this grid to the totals
             Ex += _Ex
@@ -964,6 +1091,9 @@ class Tracker:
             Bx += _Bx
             By += _By
             Bz += _Bz
+
+            if self.mass_L_rad is not None:
+                L_rad[:, i] = (self.mass_L_rad[i] / _rho[:, i]).to(u.m)
 
         # Create arrays of E and B as required by push algorithm
         E = np.array(
@@ -978,6 +1108,92 @@ class Tracker:
         # If user sets dt explicitly, that's handled in _adaptive_dt
         dt = self._adaptive_dt(Ex, Ey, Ez, Bx, By, Bz)
 
+        # The scattering calculation is inaccurate for low  densities
+        # (since it assumes a Maxwellian angle spread) and is a bit
+        # computationally intensive
+        # (when drawing the angles).
+        if self.mass_L_rad is not None:
+            # Carry out particle scattering calculation
+            vmag = np.linalg.norm(self.v[self._track_ind, :], axis=-1)
+            L_m = vmag * dt  # Length scale for the next time step
+
+            # Since theta \propto \sqrt(rho/L_rad_mass),
+            # theta is not a linear combination of rho's and so we
+            # need to apply scattering separately for each material
+            for i in range(self.num_grids):
+
+                # Scattering in particular grids can be turned off by setting those
+                # to 'None'
+                if self.mass_L_rad[i] is not None:
+                    sigmas = (
+                        2.804e-12
+                        / (self.m * vmag**2)
+                        * np.sqrt(L_m / L_rad[:, i].to(u.m).value)
+                    )
+
+                    thetas = draw_from_normal(sigmas)  # polar angle
+
+                    # Get normal vector perpendicular to each V by doing
+                    # cross-product with a random vector, then normalize it
+                    delta = np.random.uniform(size=[thetas.size, 3])
+                    delta = np.cross(self.v[self._track_ind, :], delta)
+                    delta /= np.linalg.norm(delta, axis=-1)[:, np.newaxis]
+
+                    # Rescale normalize delta using the calculate theta
+                    delta *= (vmag * np.sin(thetas))[:, np.newaxis]
+
+                    # Apply the scattering
+                    self.v[self._track_ind, :] = self.v[self._track_ind, :] + delta
+
+                    # Renormalize v to the original vmag so that energy is conserved
+                    self.v[self._track_ind, :] /= np.linalg.norm(
+                        self.v[self._track_ind, :], axis=-1
+                    )[:, np.newaxis]
+                    self.v[self._track_ind, :] *= vmag[:, np.newaxis]
+
+        # Stopping power calculating
+
+        # Interpolate the linear stopping power for each particle
+        # given the interpolated density
+        if self.mass_stopping_power is not None:
+            for i in range(self.num_grids):
+                vmag = np.linalg.norm(self.v[self._track_ind, :], axis=-1)
+                L_m = vmag * dt  # Length scale for the next time step
+
+                KE = 0.5 * self.m * vmag**2
+
+                eaxis = self.mass_stopping_power[i][0].to(u.J).value
+                sp = self.mass_stopping_power[i][1].to(u.J * u.m**2 / u.kg).value
+
+                if self.mass_stopping_power is not None:
+                    mass_stopping_power = np.interp(KE, eaxis, sp)  # J m^2/kg
+                    # J/m
+                    linear_stopping_power = (
+                        mass_stopping_power * _rho[:, i].to(u.kg / u.m**3).value
+                    )
+
+                    # J
+                    new_energy = KE - (linear_stopping_power * L_m)
+
+                    # Remove particles which have 'stopped'
+                    # Threshold is 0.1 MeV ~ 1.6e-14 J
+                    to_remove = new_energy < 1.6e-14
+                    self._remove_particles(to_remove)
+                    # Remove particles from some local variables too
+                    new_energy = new_energy[~to_remove]
+                    E = E[~to_remove, :]
+                    B = B[~to_remove, :]
+                    dt = dt[~to_remove]
+
+                    # m/s
+                    new_vmag = np.sqrt(2 * new_energy / self.m)
+
+                    # Renormalize v to the new vmag
+                    self.v[self._track_ind, :] /= np.linalg.norm(
+                        self.v[self._track_ind, :], axis=-1
+                    )[:, np.newaxis]
+                    self.v[self._track_ind, :] *= new_vmag[:, np.newaxis]
+
         # TODO: Test v/c and implement relativistic Boris push when required
         # vc = np.max(v)/_c
 
@@ -986,11 +1202,11 @@ class Tracker:
         if dt.size > 1:
             dt = dt[:, np.newaxis]
 
-        x = self.x[self.grid_ind, :]
-        v = self.v[self.grid_ind, :]
+        x = self.x[self._track_ind, :]
+        v = self.v[self._track_ind, :]
         boris_push(x, v, B, E, self.q, self.m, dt)
-        self.x[self.grid_ind, :] = x
-        self.v[self.grid_ind, :] = v
+        self.x[self._track_ind, :] = x
+        self.v[self._track_ind, :] = v
 
     @property
     def on_any_grid(self):
@@ -1010,7 +1226,7 @@ class Tracker:
         self.num_entered = np.nonzero(self.entered_grid)[0].size
 
         # How many of the particles have entered the grid
-        self.fract_entered = np.sum(self.num_entered) / self.nparticles_grid
+        self.fract_entered = np.sum(self.num_entered) / self._num_tracked
 
         # Of the particles that have entered the grid, how many are currently
         # on the grid?
@@ -1035,6 +1251,72 @@ class Tracker:
             )
 
         return True
+
+    def _remove_particles(self, remove):
+        """
+        Remove the particles and correctly modify
+        all of the internal variables accordingly
+
+        Paramters
+        ---------
+
+        remove : np.array [nparticles,]
+
+            Boolean array with length [nparticles]. Particles with non-zero
+            values will be removed.
+
+        """
+
+        # If the remove is relative to the list of tracked particles,
+        # pad it out to all particles, removing none of the non-tracked
+        # particles
+        if remove.size == self._num_tracked:
+            tracked_remove = np.copy(remove)
+            total_remove = np.zeros(self.nparticles, dtype=bool)
+            total_remove[self.do_track] = tracked_remove
+        elif remove.size == self.nparticles:
+            total_remove = remove
+            tracked_remove = remove[self._track_ind]
+        else:
+            raise ValueError(f"Unexpected length of remove: {remove.size}")
+
+        self.x = self.x[~total_remove, :]
+        self.v = self.v[~total_remove, :]
+        self.v_init = self.v_init[~total_remove, :]
+        self.theta = self.theta[~total_remove]
+        self.do_track = self.do_track[~total_remove]
+
+        # Keep track of which partiles are removed
+        self.init_indices = self.init_indices[~total_remove]
+
+        self.nparticles -= np.sum(total_remove)
+
+        # These arrays only contain the tracked particles, so modify
+        # the indexing array accordingly
+        self.on_grid = self.on_grid[~tracked_remove, :]
+        self.entered_grid = self.entered_grid[~tracked_remove]
+
+    @property
+    def _track_ind(self):
+        """
+        Returns the indices of all of the particles being actively
+        tracked.
+        """
+        return np.where(self.do_track)[0]
+
+    @property
+    def _num_tracked(self):
+        """
+        Returns the total number of particles being tracked
+        """
+        return np.sum(self.do_track)
+
+    @property
+    def _fract_tracked(self):
+        """
+        The fraction of particles currently being tracked
+        """
+        return self._num_tracked / self.nparticles
 
     def run(
         self,
@@ -1098,13 +1380,11 @@ class Tracker:
                 "called before running the particle tracing algorithm."
             )
 
-        # If meshes have been added, apply them now
-        for mesh in self.mesh_list:
-            self._apply_wire_mesh(**mesh)
-
         # Store a copy of the initial velocity distribution in memory
         # This will be used later to calculate the maximum deflection
         self.v_init = np.copy(self.v)
+        # Same for number of particles
+        self.nparticles_init = np.copy(self.nparticles)
 
         # Calculate the maximum velocity
         # Used for determining the grid crossing maximum timestep
@@ -1113,20 +1393,26 @@ class Tracker:
         # Determine which particles should be tracked
         # This array holds the indices of all particles that WILL hit the grid
         # Only these particles will actually be pushed through the fields
-        self.grid_ind = np.where(self.theta < self.max_theta_hit_grid)[0]
-        self.nparticles_grid = len(self.grid_ind)
-        self.fract_tracked = self.nparticles_grid / self.nparticles
+        self.do_track = self.theta < self.max_theta_hit_grid
+
+        # The indices of the original particles
+        # Used to keep track of which particles are deleted
+        self.init_indices = np.arange(self.nparticles)
 
         # Create flags for tracking when particles during the simulation
         # on_grid -> zero if the particle is off grid, 1
         # shape [nparticles, ngrids]
-        self.on_grid = np.zeros([self.nparticles_grid, self.num_grids])
+        self.on_grid = np.zeros([self._num_tracked, self.num_grids])
         # Entered grid -> non-zero if particle EVER entered a grid
-        self.entered_grid = np.zeros([self.nparticles_grid])
+        self.entered_grid = np.zeros([self._num_tracked])
 
         # Generate a null distribution of points (the result in the absence of
         # any fields) for statistical comparison
         self.x0 = self._coast_to_plane(self.detector, self.det_hdir, self.det_vdir)
+
+        # If meshes have been added, apply them now
+        for mesh in self.mesh_list:
+            self._apply_wire_mesh(**mesh)
 
         # Advance the particles to the near the start of the grid
         self._coast_to_grid()
@@ -1135,11 +1421,11 @@ class Tracker:
         # Setting sys.stdout lets this play nicely with regular print()
         pbar = tqdm(
             initial=0,
-            total=self.nparticles_grid + 1,
+            total=self._num_tracked + 1,
             disable=not self.verbose,
             desc="Particles on grid",
             unit="particles",
-            bar_format="{l_bar}{bar}{n:.1e}/{total:.1e} {unit}",  # noqa: FS003
+            bar_format="{l_bar}{bar}{n:.1e}/{total:.1e} {unit}",
             file=sys.stdout,
         )
 
@@ -1164,7 +1450,7 @@ class Tracker:
 
         self._log("Run completed")
 
-        self._log(f"Fraction of particles tracked: {self.fract_tracked:.1%}")
+        self._log(f"Fraction of particles tracked: {self._fract_tracked:.1%}")
 
         self._log(
             "Fraction of tracked particles that entered the grid: "
@@ -1241,6 +1527,12 @@ class Tracker:
                The velocity is in a coordinate system relative to the
                detector plane. The components are [normal, horizontal,
                vertical] relative to the detector plane coordinates.
+           * - ``"init_indices"``
+             - `~numpy.ndarray`, [``nparticles``,]
+             - The indices of each particle in the initial particle array
+               (before any particles are stopped, scattered, or deflected).
+               Used to cross-reference particles in the x,v arrays with those
+               in the xo, vo arrays.
 
         """
 
@@ -1283,6 +1575,7 @@ class Tracker:
             x0=x0loc,
             y0=y0loc,
             v0=v0,
+            init_indices=self.init_indices,
         )
 
     def save_results(self, path):
