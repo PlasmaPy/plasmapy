@@ -634,6 +634,12 @@ class CheckUnits(CheckBase):
                     msg += f"argument {param.name} "
                 msg += f"of function {self.f.__name__}()."
                 raise ValueError(msg)
+            elif _units is None and hasattr(_units_anno, "__metadata__"):
+                _units = _units_anno.__metadata__[
+                    0
+                ]  # TODO will this blow up on us somewhere?
+                _units_are_from_anno = True
+                _units_anno = None
             elif _units is None:
                 _units = _units_anno
                 _units_are_from_anno = True
@@ -1042,6 +1048,9 @@ class CheckUnits(CheckBase):
                 new_list.extend(self._flatten_equivalencies_list(el))
 
         return new_list
+
+
+# TODO rewrite as per https://github.com/astropy/astropy/pull/12335/files
 
 
 def check_units(
