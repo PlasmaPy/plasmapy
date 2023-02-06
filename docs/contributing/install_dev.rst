@@ -107,13 +107,21 @@ following:
 
 You may now enter the environment via
 
-.. code-block:: bash
+.. tab-set::
 
-   source activate plasmapy
+   .. tab-item:: Linux/MacOS
+      :sync: LinuxMacOs
 
-.. note::
+      .. code-block:: bash
 
-   On Windows, skip the ``source`` part of the previous command.
+         source activate plasmapy
+
+   .. tab-item:: Windows
+      :sync: Windows
+
+      .. code-block:: bash
+
+         activate plasmapy
 
 In newer Conda versions, the command to run is
 

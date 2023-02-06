@@ -94,6 +94,7 @@ extensions = [
     "sphinx.ext.intersphinx",
     "sphinx.ext.mathjax",
     "sphinx.ext.napoleon",
+    "sphinx_design",
     "sphinx.ext.todo",
     "nbsphinx",
     "sphinxcontrib.bibtex",

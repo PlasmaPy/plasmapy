@@ -64,6 +64,7 @@ docs = [
   "sphinx!=5.1,>=4.4",
   "sphinx-changelog>=1.2",
   "sphinx-copybutton",
+  "sphinx-design",
   "sphinx-gallery<0.11.0",
   "sphinx-hoverxref>=1.1.1",
   "sphinx-issues>=3.0.1",
