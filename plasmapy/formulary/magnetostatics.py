@@ -71,14 +71,42 @@ class MagneticDipole(MagnetoStatics):
         p0_u = self._p0_u
         return f"{name}(moment={moment}{moment_u}, p0={p0}{p0_u})"
 
-    def magnetic_field(self, p: u.m) -> u.T:
+    def magnetic_field(
+        self,
+        p: u.m = None,
+        *,
+        x: u.m = None,
+        y: u.m = None,
+        z: u.m = None,
+        r: u.m = None,
+        theta: u.rad = None,
+        phi: u.rad = None,
+    ) -> u.T:
         r"""
         Calculate magnetic field from this magnetic dipole at position ``p``.
 
         Parameters
         ----------
-        p : `~astropy.units.Quantity`
+        p : `~astropy.units.Quantity`, optional
             Three-dimensional position vector.
+
+        x : `~astropy.units.Quantity`, optional
+            x-component in Cartesian coordinates.
+
+        y : `~astropy.units.Quantity`, optional
+            y-component in Cartesian coordinates.
+
+        z : `~astropy.units.Quantity`, optional
+            z-component in Cartesian or cylindrical coordinates.
+
+        r : `~astropy.units.Quantity`, optional
+            radius in spherical or cylindrical coordinates.
+
+        theta : `~astropy.units.Quantity`, optional
+            polar angle in spherical coordinates.
+
+        phi : `~astropy.units.Quantity`, optional
+            azimuthal angle spherical or cylindrical coordinates.
 
         Returns
         -------
@@ -111,7 +139,32 @@ class MagneticDipole(MagnetoStatics):
 
         where :math:`\mu_0` is vacuum permeability.
         """
-        r = p - self.p0
+        if p is not None:
+            r = p - self.p0
+        elif x is not None and y is not None and z is not None:
+            r = np.array([x, y, z]) - self.p0
+        elif r is not None and z is not None and phi is not None:
+            r = (
+                np.array(
+                    [
+                        r * np.cos(phi),
+                        r * np.sin(phi),
+                        z,
+                    ]
+                )
+                - self.p0
+            )
+        elif r is not None and theta is not None and phi is not None:
+            r = (
+                np.array(
+                    [
+                        r * np.sin(theta) * np.cos(phi),
+                        r * np.sin(theta) * np.sin(phi),
+                        r * np.cos(theta),
+                    ]
+                )
+                - self.p0
+            )
         m = self.moment
         B = (
             constants.mu0.value

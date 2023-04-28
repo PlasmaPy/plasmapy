@@ -1,0 +1,1 @@
+Added keyword-only arguments for Cartesian, spherical, and cylindrical coordinates to the MagneticDipole.magnetic_field method from plasmapy.formulary.magnetostatics.
