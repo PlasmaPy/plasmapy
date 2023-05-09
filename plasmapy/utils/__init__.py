@@ -36,6 +36,8 @@ from plasmapy.utils.exceptions import (
     RelativityWarning,
 )
 
+# changes would go here
+
 with contextlib.suppress(ModuleNotFoundError):
     # pytest is not a hard dependency, so only import pytest_helpers if pytest
     # is installed
