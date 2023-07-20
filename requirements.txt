@@ -50,17 +50,28 @@ charset-normalizer==3.2.0
 click==8.1.5
     # via
     #   click-default-group
+    #   dask
     #   towncrier
 click-default-group==1.2.2
     # via towncrier
+cloudpickle==2.2.1
+    # via dask
 colorama==0.4.6
-    # via tox
+    # via
+    #   click
+    #   ipython
+    #   pytest
+    #   sphinx
+    #   tox
+    #   tqdm
 comm==0.1.3
     # via ipykernel
 contourpy==1.1.0
     # via matplotlib
 cycler==0.11.0
     # via matplotlib
+dask[array]==2023.6.1
+    # via plasmapy (setup.py)
 debugpy==1.6.7
     # via ipykernel
 decorator==5.1.1
@@ -92,6 +103,8 @@ filelock==3.12.2
     #   virtualenv
 fonttools==4.41.0
     # via matplotlib
+fsspec==2023.6.0
+    # via dask
 future==0.18.3
     # via uncertainties
 h5py==3.9.0
@@ -106,6 +119,8 @@ idna==3.4
     #   requests
 imagesize==1.4.1
     # via sphinx
+importlib-metadata==6.7.0
+    # via dask
 incremental==22.10.0
     # via towncrier
 iniconfig==2.0.0
@@ -173,6 +188,8 @@ llvmlite==0.40.1
     # via numba
 lmfit==1.2.2
     # via plasmapy (setup.py)
+locket==1.0.0
+    # via partd
 markupsafe==2.1.3
     # via
     #   jinja2
@@ -216,6 +233,7 @@ numpy==1.24.4
     # via
     #   astropy
     #   contourpy
+    #   dask
     #   h5py
     #   lmfit
     #   matplotlib
@@ -230,6 +248,7 @@ numpydoc==1.5.0
 packaging==23.1
     # via
     #   astropy
+    #   dask
     #   ipykernel
     #   jupyter-server
     #   jupyterlab-server
@@ -248,9 +267,11 @@ pandas==2.0.3
 pandocfilters==1.5.0
     # via nbconvert
 parso==0.8.3
+    # via ipython
+partd==1.4.0
     # via jedi
 pexpect==4.8.0
-    # via ipython
+    # via dask
 pickleshare==0.7.5
     # via ipython
 pillow==10.0.0
@@ -323,6 +344,7 @@ pytz==2023.3
 pyyaml==6.0
     # via
     #   astropy
+    #   dask
     #   pre-commit
     #   pybtex
     #   pytest-regressions
@@ -428,6 +450,10 @@ tinycss2==1.2.1
     # via nbconvert
 tomli==2.0.1
     # via plasmapy (setup.py)
+toolz==0.12.0
+    # via
+    #   dask
+    #   partd
 tornado==6.3.2
     # via
     #   ipykernel
@@ -485,6 +511,8 @@ wrapt==1.15.0
     # via plasmapy (setup.py)
 xarray==2023.6.0
     # via plasmapy (setup.py)
+zipp==3.15.0
+    # via importlib-metadata
 
 # The following packages are considered to be unsafe in a requirements file:
 # setuptools
