@@ -45,6 +45,14 @@ Formulary
 
    notebooks/formulary/*
 
+Helio
+-----
+
+.. nbgallery::
+   :glob:
+
+   notebooks/formulary/helio/*
+
 Particles
 ---------
 

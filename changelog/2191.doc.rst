@@ -1,0 +1,1 @@
+Notebook added to demonstrate the functionality in `~plasmapy.formulary.collisions.helio.collisional_analysis.temp_ratio`.
