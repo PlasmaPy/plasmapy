@@ -1,0 +1,2 @@
+Functionality in plasmapy.formulary.collisions.helio.collisional_analysis has been updated,
+it now includes the differential flow function along with the corresponding notebook.

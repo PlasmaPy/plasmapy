@@ -59,6 +59,7 @@ dependencies = [
 [project.optional-dependencies]
 docs = [
   "docutils >= 0.18.1",
+  "hapiclient >= 0.2.5",
   "jinja2 >= 3.1.2",
   "nbsphinx >= 0.9.1",
   "numpydoc >= 1.5.0",

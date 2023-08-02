@@ -98,6 +98,8 @@ future==0.18.3
     # via uncertainties
 h5py==3.9.0
     # via plasmapy (setup.py)
+hapiclient>=0.2.5
+     # via plasmapy (setup.py)
 hypothesis==6.82.0
     # via plasmapy (setup.py)
 identify==2.5.26
