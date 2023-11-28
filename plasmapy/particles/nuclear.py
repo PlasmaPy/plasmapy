@@ -1,6 +1,8 @@
 """Functions that are related to nuclear reactions."""
 __all__ = ["nuclear_binding_energy", "nuclear_reaction_energy", "mass_energy"]
 
+import numpy as np
+
 import astropy.units as u
 import re
 
@@ -11,6 +13,263 @@ from plasmapy.particles.decorators import particle_input
 from plasmapy.particles.exceptions import InvalidParticleError, ParticleError
 from plasmapy.particles.particle_class import Particle
 
+
+_boschhalereactions = {
+    "D + T -> n + 4He": {
+        "cross section": {
+            "Bg": 34.3827,
+            "A": [6.927e4, 7.454e8, 2.050e6, 5.2002e4, 0],
+            "B": [6.38e1, -9.95e-1, 6.981e-5, 1.728e-4],
+            "energy_range": [0.5, 550],
+            "error_max": 1.9
+        },
+        "Maxwellian rate coefficient": {
+            "Bg": 34.3827,
+            "mrcsq" : 1124656,
+            "C": [1.17302e-9,
+                  1.51361e-2,
+                  7.51886e-2,
+                  4.60643e-3,
+                  1.35000e-2,
+                 -1.06750e-4,
+                  1.36600e-5],
+            "energy_range": [0.2, 100],
+            "error_max": 0.25
+          }
+    },
+    "D + 3He -> 4He + p": {
+        "cross section": {
+            "Bg": 68.7508,
+            "A": [5.7501e6, 2.5226e3, 4.5566e1, 0, 0],
+            "B": [-3.1995e-3, -8.5530e-6, 5.9014e-8, 0],
+            "energy_range": [0.3, 900],
+            "error_max": 2.2
+        },
+        "Maxwellian rate coefficient": {
+            "Bg": 68.7508,
+            "mrcsq" : 1124572,
+            "C": [5.51036e-10,
+                  6.41918e-3 ,
+                 -2.02896e-3,
+                 -1.91080e-5,
+                  1.35776e-4,
+                  0.0,
+                  0.0],
+            "energy_range" : [0.5, 190],
+            "error_max": 2.5
+            }
+    },
+    "D + D -> p + T": {
+        "cross section": {
+            "Bg": 31.3970,
+            "A": [5.5576e4, 2.1054e2, -3.2638e-2, 1.4987e-6, 1.8181e-10],
+            "B": [0, 0, 0, 0],
+            "energy_range": [0.5, 5000],
+            "error_max": 2.0
+        },
+        "Maxwellian rate coefficient": {
+            "Bg":  31.3970,
+            "mrcsq" : 937814,
+            "C": [5.65718e-12,
+                  3.41267e-3,
+                  1.99167e-3,
+                  0.0,
+                  1.05060e-5,
+                  0.0,
+                  0.0],
+            "energy_range" : [0.2, 100],
+            "error_max": 0.35
+            }
+    },
+    "D + D -> 3He + n": {
+        "cross section": {
+            "Bg": 31.3970,
+            "A": [5.3701e4, 3.3027e2, -1.2706e-1, 2.9327e-5, -2.5151e-9],
+            "B": [0, 0, 0, 0],
+            "energy_range": [0.5, 4900],
+            "error_max": 2.5
+        },
+        "Maxwellian rate coefficient": {
+            "Bg": 31.3970,
+            "mrcsq": 937814,
+            "C": [5.43360e-12,
+                  5.85778e-3,
+                  7.68222e-3,
+                  0.0,
+                 -2.96400e-6,
+                  0.0,
+                  0.0],
+            "energy_range": [0.2, 100],
+            "error_max": 0.3
+            }
+    }
+}
+
+class FusionReaction():
+
+    def __init__(self, reaction):
+        if not isinstance(reaction, str):
+            raise TypeError(
+                "The input reaction should be given as a string."
+            )
+        # basic data needs are cross section and maxwellian rate coefficient
+        # other types of data, e.g. beam on maxwellian target, could be useful
+        # but should be considered "extra"
+        self.data = None
+        self.cs = None
+        self.maxw_rate_coeff = None
+
+        reaction_list = list(_boschhalereactions.keys())
+
+        if reaction in reaction_list:
+            self.data = _boschhalereactions[reaction]
+
+            cs_key = "cross section"
+            if cs_key in self.data and self.data[cs_key] is not None:
+                d = self.data[cs_key]
+                self.cs = BoschHaleCrossSectionFit(d["Bg"], d["A"], d["B"],
+                                                   d["energy_range"],
+                                                   d["error_max"])
+
+            mxw_rc_key = "Maxwellian rate coefficient"
+            if mxw_rc_key in self.data and self.data[mxw_rc_key] is not None:
+                d = self.data[mxw_rc_key]
+                self.maxw_rate_coeff = BoschHaleRateCoefficientFit(
+                    d["Bg"], d["mrcsq"], d["C"], d["energy_range"],
+                    d["error_max"])
+
+        # might add additional types of databases here
+        else:
+            print("Reaction not found. Available reactions are:")
+            for reaction in reaction_list:
+                print(reaction)
+            raise KeyError("Reaction not found.")
+
+
+    def cross_section(self, energy) -> u.Quantity:
+        if self.cs is not None:
+            return self.cs.sigma(energy)
+        else:
+            # TODO raise some error
+            pass
+
+    def rate_coefficient(self, temperature) -> u.Quantity:
+        if self.maxw_rate_coeff is not None:
+            return self.maxw_rate_coeff.sigma_v(temperature)
+        else:
+            # TODO raise some error
+            pass
+
+class BoschHaleCrossSectionFit():
+    """
+    Evaluates nuclear reaction cross sections in the form of the fit given in
+    the referenced paper [1], Equations (8) and (9).
+
+    References
+    ----------
+    [1] Bosch, H.-S.; Hale, G. M. Improved Formulas for
+    Fusion Cross-Sections and Thermal Reactivities.
+    Nuclear Fusion 1992, 32 (4).
+    https://iopscience.iop.org/article/10.1088/0029-5515/32/4/I07/meta
+    """
+
+    def __init__(self, Bg, A, B, energy_range, error_max):
+        """
+        Parameters
+        ----------
+        Bg : float
+            \sqrt{keV}
+        A : list
+            Pade numerator coefficients
+        B : list
+            Pade denominator coefficients
+        energy_range : list with two elements
+            [lo, hi] in keV
+            Valid energy range for the formula
+        error_max : in percent
+            Maximum error of the formula from the best known cross section data
+        """
+        self.Bg = Bg # in \sqrt{keV}
+        self.A1, self.A2, self.A3, self.A4, self.A5 = A
+        self.B1, self.B2, self.B3, self.B4 = B
+        self.energy_range = energy_range
+        self.error_max = error_max
+
+    def sigma(self, energy) -> u.Quantity:
+        """Cross section
+
+        Parameters
+        ----------
+        Energy: `~astropy.units.Quantity`
+            Center-of-mass-frame energy in keV
+
+        Returns
+        -------
+        sigma : `~astropy.units.Quantity`
+            The reaction cross section in millibarns
+
+        Notes
+        -----
+        See Equations (8) and (9) of Bosch & Hale
+        """
+        # TODO return warning if out of energy range?
+        E = energy.to('keV').value
+        numerator = self.A1 + E * (self.A2 + E * (self.A3 + E * (self.A4 + E * self.A5)))
+        denominator = 1 + E * (self.B1 + E * (self.B2 + E * (self.B3 + E * self.B4)))
+        S = numerator / denominator
+        sigma = S / (E * np.exp(self.Bg / np.sqrt(E)))
+        return sigma * u.millibarn
+
+class BoschHaleRateCoefficientFit():
+    """
+    Evaluates nuclear reaction rate coefficients in the form of the fit given in
+    the referenced paper [1], Equations (12-14)
+
+    References
+    ----------
+    [1] Bosch, H.-S.; Hale, G. M. Improved Formulas for
+    Fusion Cross-Sections and Thermal Reactivities.
+    Nuclear Fusion 1992, 32 (4).
+    https://iopscience.iop.org/article/10.1088/0029-5515/32/4/I07/meta
+    """
+
+    def __init__(self, Bg, mrcsq, C, energy_range, error_max):
+        """
+        Parameters
+        ----------
+        Bg : float
+            \sqrt{keV}
+        mrcsq : float
+            keV, an energy
+        C : list
+            Coefficients
+        energy_range : list with two elements
+            keV, [low, high]
+            Valid energy range for the formula
+        error_max : in percent
+            Maximum error of the formula from the best known cross section data
+        """
+        self.Bg = Bg
+        self.mrcsq = mrcsq
+        self.C = C
+        self.energy_range = energy_range
+        self.error_max = error_max
+
+    def sigma_v(self, temperature):
+        # TODO return warning if out of energy range?
+        T = temperature.to(u.keV).value
+        c1, c2, c3, c4, c5, c6, c7 = self.C
+        numer = T * (c2 + T * (c4 + T * c6))
+        denom = 1 + T * (c3 + T * (c5 + T * c7))
+        theta = T / (1 - numer / denom)
+
+        Bg = self.Bg
+        xi = (Bg**2 / (4 * theta))**(1/3)
+
+        mrcsq = self.mrcsq
+        sigma_v = c1 * theta * np.sqrt(xi / (mrcsq * T**3)) * np.exp(-3 * xi)
+
+        return sigma_v * u.m**3 * u.s
 
 @particle_input(any_of={"isotope", "baryon"})
 def nuclear_binding_energy(
