@@ -1,5 +1,8 @@
-"""Functionality for determining the floating potential of a Langmuir sweep."""
-__all__ = ["find_floating_potential", "VFExtras"]
+"""
+Functionality for determining the floating potential of a Langmuir
+sweep.
+"""
+__all__ = ["find_floating_potential", "plot_floating_potential", "VFExtras"]
 __aliases__ = ["find_vf_"]
 
 import numbers
@@ -11,6 +14,11 @@ from warnings import warn
 from plasmapy.analysis import fit_functions as ffuncs
 from plasmapy.analysis.swept_langmuir.helpers import check_sweep
 from plasmapy.utils.exceptions import PlasmaPyWarning
+
+if False:
+    # noqa
+    # for annotation, does not need real import
+    from matplotlib.axes import Axes
 
 __all__ += __aliases__
 
@@ -33,7 +41,7 @@ class VFExtras(NamedTuple):
     curve fit.
     """
 
-    fitted_func: Optional[float]
+    fitted_func: Optional[ffuncs.AbstractFitFunction]
     """
     Alias for field number 2, the :term:`fit-function` fitted during
     the floating potential curve fit.
@@ -342,3 +350,127 @@ find_vf_ = find_floating_potential
 Alias to
 :func:`~plasmapy.analysis.swept_langmuir.floating_potential.find_floating_potential`.
 """
+
+
+def plot_floating_potential(
+    voltage, current, *, vf, vf_extras: VFExtras, ax: "Axes" = None
+):
+    import matplotlib.pyplot as plt
+
+    if ax is None:
+        ax = plt.gcf()
+    elif not isinstance(ax, plt.Axes):
+        raise ValueError
+
+    if not isinstance(vf_extras, VFExtras):
+        raise ValueError
+
+    # calc island points
+    isl_pts = np.array([], dtype=np.int64)
+    for isl in vf_extras.islands:
+        isl_pts = np.concatenate((isl_pts, np.r_[isl]))
+
+    # calc xrange for plot
+    xlim = [
+        voltage[vf_extras.fitted_indices].min(),
+        voltage[vf_extras.fitted_indices].max(),
+    ]
+    xlim_pad = 0.25 * (xlim[1] - xlim[0])
+    xlim = [xlim[0] - xlim_pad, xlim[1] + xlim_pad]
+
+    # calc data points for fit curve
+    mask1 = np.where(voltage >= xlim[0], True, False)
+    mask2 = np.where(voltage <= xlim[1], True, False)
+    mask = np.logical_and(mask1, mask2)
+    vfit = np.linspace(xlim[0], xlim[1], 201, endpoint=True)
+    ifit, ifit_err = vf_extras.fitted_func(vfit, reterr=True)
+
+    ax.set_xlabel("Bias Voltage (V)", fontsize=12)
+    ax.set_ylabel("Current (A)", fontsize=12)
+    ax.set_xlim(*xlim)
+
+    # plot original data
+    ax.plot(
+        voltage[mask],
+        current[mask],
+        marker="o",
+        zorder=10,
+        label="Sweep Data",
+    )
+
+    # highlight points used for fit
+    ax.scatter(
+        voltage[vf_extras.fitted_indices],
+        current[vf_extras.fitted_indices],
+        linewidth=2,
+        s=6 ** 2,
+        facecolors="deepskyblue",
+        edgecolors="deepskyblue",
+        zorder=11,
+        label="Points for Fit",
+    )
+
+    # highlight crossing islands
+    ax.scatter(
+        voltage[isl_pts],
+        current[isl_pts],
+        linewidth=2,
+        s=8 ** 2,
+        facecolors="deepskyblue",
+        edgecolors="black",
+        zorder=12,
+        label="Island Points",
+    )
+
+    # plot fitted curve
+    if isinstance(vf_extras.fitted_func, ffuncs.Linear):
+        label = "Linear Fit"
+    elif isinstance(vf_extras.fitted_func, ffuncs.ExponentialPlusOffset):
+        label = "Exponential Fit"
+    else:
+        label = "Fit"
+
+    ax.autoscale(False)
+    ax.plot(vfit, ifit, color="orange", zorder=13, label=label)
+    ax.fill_between(
+        vfit,
+        ifit + ifit_err,
+        ifit - ifit_err,
+        color="orange",
+        alpha=0.12,
+        zorder=0,
+        label="Fit Error",
+    )
+
+    # plot fiducia
+    ax.axhline(0.0, color="r", linestyle="--")
+    ax.fill_between(
+        [vf - vf_extras.vf_err, vf + vf_extras.vf_err],
+        ax.get_ylim()[0],
+        ax.get_ylim()[1],
+        color="grey",
+        alpha=0.1,
+    )
+    ax.axvline(vf, color="grey")
+
+    ax.legend(fontsize=12)
+
+    # add text
+    rsq = vf_extras.rsq
+    txt = f"$V_f = {vf:.2f} \\pm {vf_extras.vf_err:.2f}$ V\n"
+    txt += f"$r^2 = {rsq:.3f}$"
+    txt_loc = [vf, ax.get_ylim()[1]]
+    txt_loc = ax.transData.transform(txt_loc)
+    txt_loc = ax.transAxes.inverted().transform(txt_loc)
+    txt_loc[0] -= 0.02
+    txt_loc[1] -= 0.26
+    ax.text(
+        txt_loc[0],
+        txt_loc[1],
+        txt,
+        fontsize="large",
+        transform=ax.transAxes,
+        ha="right",
+    )
+
+    return ax
