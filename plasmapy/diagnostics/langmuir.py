@@ -133,13 +133,14 @@ class Characteristic:
                 f"({len(self.current)})."
             )
 
-        bias_unique = np.unique(self.bias)
-        current_unique = []
-        for bias in bias_unique:
-            current_unique = np.append(
-                current_unique, np.mean(self.current[self.bias == bias].to(u.A).value)
-            )
-        current_unique *= u.A
+        bias_unique, bias_indices, bias_counts = np.unique(self.bias, return_index=True, return_counts=True)
+
+        if len(bias_unique) == len(self.bias):  # no duplicate bias values
+            current_unique = self.current
+        else:
+          current_values = self.current.to(u.A).value
+          current_unique = [current_values[bias_indices[i]] if bias_counts[i] == 1 else np.mean(current_values[self.bias == bias_unique[i]]
+                                                                                              ) for i in range(len(bias_unique))] * u.A
 
         if not inplace:
             return Characteristic(bias_unique, current_unique)
