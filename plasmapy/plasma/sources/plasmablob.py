@@ -127,7 +127,7 @@ class PlasmaBlob(GenericPlasma):
         kinetic energy.
         """
         couple = coupling_parameter(
-            self.T_e, self.n_e, (self.particle, self.particle), self.Z
+            self.T_e, self.n_e, (self.particle, self.particle), self.Z*u.dimensionless_unscaled
         )
         if couple < 0.01:
             warnings.warn(
