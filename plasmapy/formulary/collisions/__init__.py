@@ -11,6 +11,7 @@ from plasmapy.formulary.collisions.frequencies import *
 from plasmapy.formulary.collisions.helio import *
 from plasmapy.formulary.collisions.lengths import *
 from plasmapy.formulary.collisions.misc import *
+from plasmapy.formulary.collisions.timescales import *
 
 __all__ = [
     obj_name
