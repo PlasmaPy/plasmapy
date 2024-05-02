@@ -465,6 +465,12 @@ max-complexity = 10
 [tool.ruff.lint.pydocstyle]
 convention = "numpy"
 
+[tool.docsig]
+check-dunders = false
+check-overridden = false
+check-protected = false
+summary = true
+
 [tool.towncrier]
 package = "plasmapy"
 name = "PlasmaPy"

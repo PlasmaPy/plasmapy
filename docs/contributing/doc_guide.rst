@@ -1153,17 +1153,16 @@ Building documentation
    documentation locally on your own computer. New contributors can
    safely skip this section.
 
-There are two methods for building the documentation: make_ and |tox|.
-
-* Using make_ will build the documentation based off of what is in the
-  current directory structure. make_ is quicker for local builds than
-  |tox| but requires you to install and set up all dependencies.
+There are two methods for building the documentation: |tox| and make_.
 
 * Using |tox| does not require setting up all dependencies ahead of
   time, but is more computationally intensive since it creates a virtual
   environment and builds the package before building the documentation.
   Consequently, PlasmaPy uses |tox| for building the documentation on
   continuous integration testing platforms.
+
+* Using make_ is quicker for local builds than |tox|, but requires us to
+  install and set up all dependencies.
 
 .. _doc-build-prereqs:
 

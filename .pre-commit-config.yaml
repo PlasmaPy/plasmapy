@@ -113,3 +113,15 @@ repos:
     additional_dependencies:
     # remove ruff dependency after 0.3.5 is released
     - ruff !=0.3.3, !=0.3.4
+
+- repo: https://github.com/jshwi/docsig
+  rev: v0.44.2
+  hooks:
+  - id: docsig
+    args:
+    - --check-class
+    - --check-dunders
+    - --check-overridden
+    - --check-protected
+    - --summary
+    exclude: tests|plasmapy_sphinx
