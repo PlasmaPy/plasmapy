@@ -1,0 +1,2 @@
+Added a section to the documentation guide on how to add example
+notebooks.
