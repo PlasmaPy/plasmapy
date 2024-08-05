@@ -81,12 +81,15 @@ _author_list_from_cff.generate_rst_file()
 # Sphinx configuration variables
 
 extensions = [
+    # plasmapy extensions & setups
+    "plasmapy_sphinx.theme",
+    "plasmapy_sphinx.ext.autodoc",
+    "plasmapy_sphinx.ext.directives",
+    # other 3rd party extensions
     "hoverxref.extension",
     "IPython.sphinxext.ipython_console_highlighting",
     "nbsphinx",
     "notfound.extension",
-    "plasmapy_sphinx",
-    "sphinx.ext.autodoc",
     "sphinx.ext.duration",
     "sphinx.ext.extlinks",
     "sphinx.ext.graphviz",
@@ -116,7 +119,6 @@ exclude_patterns = [
     ".tox",
     "_build",
     "notebooks/langmuir_samples",
-    "plasmapy_sphinx",
     "Thumbs.db",
 ]
 
@@ -224,11 +226,8 @@ rst_prolog = """
 
 html_logo = "./_static/with-text-light-190px.png"
 html_static_path = ["_static"]
-html_theme = "sphinx_rtd_theme"
-html_theme_options = {
-    "logo_only": True,
-    "includehidden": False,
-}
+html_theme = "plasmapy_theme"
+html_theme_options = {}
 htmlhelp_basename = "PlasmaPydoc"
 
 # sphinx.ext.autodoc
@@ -256,6 +255,7 @@ intersphinx_mapping = {
     "numba": ("https://numba.readthedocs.io/en/stable/", None),
     "numpy": ("https://numpy.org/doc/stable/", None),
     "pandas": ("https://pandas.pydata.org/pandas-docs/stable/", None),
+    "plasmapy_sphinx": ("https://plasmapy-sphinx.readthedocs.io/en/latest/", None),
     "pytest": ("https://docs.pytest.org/en/stable/", None),
     "python": ("https://docs.python.org/3/", None),
     "readthedocs": ("https://docs.readthedocs.io/en/stable/", None),
@@ -532,7 +532,7 @@ nbsphinx_prolog = r"""
     \sphinxcode{\sphinxupquote{\strut {{ docname | escape_latex }}}} \dotfill}}
 """
 
-# plasmapy_sphinx settings
+# plasmapy_sphinx.ext.autodoc settings
 
 autosummary_generate = True
 automodapi_custom_groups = {
@@ -587,5 +587,4 @@ automodapi_group_order = (
 
 def setup(app: Sphinx) -> None:
     app.add_config_value("revision", "", rebuild=True)
-    app.add_css_file("css/admonition_color_contrast.css")
-    app.add_css_file("css/plasmapy.css", priority=600)
+    app.add_css_file("css/overrides.css", priority=600)

@@ -20,4 +20,6 @@ python:
   install:
   - method: pip
     path: .
-  - requirements: ci_requirements/docs-3.12-linux.txt
+    extra_requirements:
+      - docs
+#  - requirements: ci_requirements/docs-3.12-linux.txt

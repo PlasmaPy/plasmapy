@@ -89,6 +89,7 @@ docs = [
   "numpydoc >= 1.7.0",
   "pillow >= 10.4.0",
   "pygments >= 2.18.0",
+  "plasmapy_sphinx >= 0.1.0a1",
   "sphinx == 7.3.7",
   "sphinx-changelog >= 1.5.0",
   "sphinx-codeautolink >= 0.15.2",
