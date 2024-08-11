@@ -73,8 +73,7 @@ which the data match its plasma data structure.
 
 .. automodapi:: plasmapy.plasma
    :noindex:
-   :no-main-docstring:
-   :exclude-groups: modules, variables
+   :no-main-docstr:
 
 .. _plasma-sources:
 
@@ -108,7 +107,6 @@ relevant plasma particle (``particle``).
 
 .. automodapi:: plasmapy.plasma.sources
    :noindex:
-   :exclude-groups: modules
    :skip: HDF5Reader
 
 Writing a new Plasma subclass
@@ -174,5 +172,4 @@ API
 
 .. automodapi:: plasmapy.plasma
    :noindex:
-   :no-main-docstring:
-   :heading-chars: "^~"
+   :no-main-docstr:

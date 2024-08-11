@@ -1080,8 +1080,8 @@ extensions:
 * |sphinx-reredirects|_ to enable hyperlink redirects.
 * |sphinx-toolbox|_ for handy tools for |Sphinx| documentation
 * |sphinxemoji|_ for emoji substitutions
-* `plasmapy_sphinx` for customizations created for use in PlasmaPy and
-  affiliated packages. Note that `plasmapy_sphinx` is expected to be
+* ``plasmapy_sphinx`` for customizations created for use in PlasmaPy and
+  affiliated packages. Note that ``plasmapy_sphinx`` is expected to be
   broken out into its own package in the future.
 
 These extensions are specified in :confval:`extensions` configuration

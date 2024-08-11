@@ -89,7 +89,8 @@ docs = [
   "numpydoc >= 1.7.0",
   "pillow >= 10.4.0",
   "pygments >= 2.18.0",
-  "sphinx == 7.3.7",
+  "sphinx >= 7.4.7",
+  "sphinx-automodapi >= 0.17.0",
   "sphinx-changelog >= 1.5.0",
   "sphinx-codeautolink >= 0.15.2",
   "sphinx-copybutton >= 0.5.2",
@@ -272,7 +273,6 @@ namespace-packages = [".github/workflows", "docs"]
 output-format = "grouped"
 show-fixes = true
 extend-exclude = [
-  "docs/plasmapy_sphinx",
   ".idea",
   ".hypothesis",
   ".jupyter",

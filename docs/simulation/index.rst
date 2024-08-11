@@ -31,5 +31,4 @@ API
 ===
 
 .. automodapi:: plasmapy.simulation
-   :heading-chars: ^~
    :noindex:

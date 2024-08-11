@@ -64,7 +64,6 @@ repos:
   hooks:
   - id: python-check-blanket-noqa
     name: noqa comments have an error code
-    exclude: ^docs/plasmapy_sphinx/
   - id: rst-directive-colons
   - id: rst-inline-touching-normal
   - id: text-unicode-replacement-char

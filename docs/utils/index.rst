@@ -29,16 +29,11 @@ API
 ===
 
 .. automodapi:: plasmapy.utils.decorators
-   :include-heading:
 
 .. automodapi:: plasmapy.utils.exceptions
-   :include-heading:
 
 .. automodapi:: plasmapy.utils.code_repr
-   :include-heading:
 
 .. automodapi:: plasmapy.utils.calculator
-   :include-heading:
 
 .. automodapi:: plasmapy.utils.data
-   :include-heading:

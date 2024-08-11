@@ -44,4 +44,4 @@ API
 
 .. automodapi:: plasmapy.particles
    :noindex:
-   :no-main-docstring:
+   :no-main-docstr:

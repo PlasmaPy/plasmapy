@@ -17,4 +17,3 @@ API
 ---
 
 .. automodapi:: plasmapy.diagnostics.charged_particle_radiography
-   :heading-chars: ^~

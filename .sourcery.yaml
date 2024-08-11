@@ -7,7 +7,6 @@ ignore:
 - .tox
 - node_modules
 - vendor
-- docs/plasmapy_sphinx
 - braginskii.py
 - _helpers.py
 

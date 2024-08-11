@@ -29,4 +29,3 @@ API
 ---
 
 .. automodapi:: plasmapy.analysis
-   :heading-chars: ^~

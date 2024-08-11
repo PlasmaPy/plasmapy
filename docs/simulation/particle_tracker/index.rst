@@ -15,4 +15,3 @@ API
 ---
 
 .. automodapi:: plasmapy.simulation.particle_tracker
-   :heading-chars: ^~

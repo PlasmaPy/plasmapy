@@ -85,7 +85,6 @@ extensions = [
     "IPython.sphinxext.ipython_console_highlighting",
     "nbsphinx",
     "notfound.extension",
-    "plasmapy_sphinx",
     "sphinx.ext.autodoc",
     "sphinx.ext.duration",
     "sphinx.ext.extlinks",
@@ -95,6 +94,7 @@ extensions = [
     "sphinx.ext.napoleon",
     "sphinx.ext.todo",
     "sphinx.ext.viewcode",
+    "sphinx_automodapi.automodapi",
     "sphinx_changelog",
     "sphinx_codeautolink",
     "sphinx_copybutton",
@@ -116,7 +116,6 @@ exclude_patterns = [
     ".tox",
     "_build",
     "notebooks/langmuir_samples",
-    "plasmapy_sphinx",
     "Thumbs.db",
 ]
 

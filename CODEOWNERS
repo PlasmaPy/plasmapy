@@ -31,7 +31,6 @@ docs/_author_list_from_cff.py @namurphy
 docs/_global_substitutions.py @namurphy
 docs/conf.py @namurphy
 docs/contributing/ @namurphy
-docs/plasmapy_sphinx/ @rocco8773
 
 # project files
 

@@ -18,4 +18,3 @@ API
 ---
 
 .. automodapi:: plasmapy.diagnostics
-   :heading-chars: ^~

@@ -625,7 +625,7 @@ Trivial/Internal Changes
   ``try`` & ``except`` blocks. (`#1494
   <https://github.com/plasmapy/plasmapy/pull/1494>`__)
 - Added a |pre-commit| hook that transforms relative imports to
-  absolute imports, except in :file:`docs/plasmapy_sphinx`. (`#1499
+  absolute imports, except in ``docs/plasmapy_sphinx``. (`#1499
   <https://github.com/plasmapy/plasmapy/pull/1499>`__)
 - Added a test that ``import plasmapy`` does not raise an
   exception. (`#1501

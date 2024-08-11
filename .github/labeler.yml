@@ -69,7 +69,6 @@ docs:
       'docs/**/*.py',
       'docs/**/make.bat',
       'docs/**/Makefile',
-      'docs/**/plasmapy_sphinx/**',
       'docs/**/robots.txt'
     ]
 
