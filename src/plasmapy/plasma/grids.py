@@ -127,7 +127,7 @@ class AbstractGrid(ABC):
         RecognizedQuantity("B_y", "Magnetic field (y component)", u.T),
         RecognizedQuantity("B_z", "Magnetic field (z component)", u.T),
         RecognizedQuantity("phi", "Electric Scalar Potential", u.V),
-        RecognizedQuantity("n_e", "Electron Number Density", 1 / u.m**3),
+        RecognizedQuantity("T_i", "Ion Temperature", u.K),
         RecognizedQuantity("dEdx", "Stopping Power", u.J * u.m**2 / u.kg),
     ]
 

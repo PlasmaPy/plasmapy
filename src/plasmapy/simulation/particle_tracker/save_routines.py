@@ -93,6 +93,9 @@ class AbstractSaveRoutine(ABC):
     def _save_to_disk(self) -> None:
         """Save a hdf5 file containing simulation positions and velocities."""
 
+        if isinstance(self.output_directory, str):
+            self.output_directory = Path(self.output_directory)
+
         path = self.output_directory / f"{self.tracker.iteration_number}.hdf5"
 
         with h5py.File(path, "w") as output_file:

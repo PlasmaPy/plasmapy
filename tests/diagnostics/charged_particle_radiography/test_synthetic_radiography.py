@@ -967,7 +967,11 @@ def test_radiography_disk_save_routine(tmp_path) -> None:
     detector = (0 * u.mm, 200 * u.mm, 0 * u.mm)
 
     sim = cpr.Tracker(
-        grid, source, detector, field_weighting="nearest neighbor", output_file=tmp_path
+        grid,
+        source,
+        detector,
+        field_weighting="nearest neighbor",
+        output_directory=tmp_path,
     )
     sim.create_particles(1e3, 15 * u.MeV, max_theta=8 * u.deg, random_seed=42)
     sim.run()

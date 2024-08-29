@@ -26,6 +26,7 @@ from plasmapy.simulation.particle_tracker.save_routines import SaveOnceOnComplet
 from plasmapy.simulation.particle_tracker.termination_conditions import (
     AllParticlesOffGridTerminationCondition,
 )
+from plasmapy.utils.decorators import validate_quantities
 
 
 def _coerce_to_cartesian_si(pos):
@@ -97,6 +98,8 @@ class _SyntheticRadiographySaveRoutine(SaveOnceOnCompletion):
 
         if self.output_directory is None:
             return
+        elif isinstance(self.output_directory, str):
+            self.output_directory = Path(self.output_directory)
 
         output_file_path = self.output_directory / "output.hdf5"
 
@@ -201,7 +204,7 @@ class Tracker(ParticleTracker):
             "volume averaged", "nearest neighbor"
         ] = "volume averaged",
         detector_hdir=None,
-        output_file: Path | None = None,
+        output_directory: Path | None = None,
         fraction_exited_threshold: float = 0.999,
         verbose: bool = True,
     ) -> None:
@@ -209,8 +212,8 @@ class Tracker(ParticleTracker):
         # The particle tracker class ensures that the provided grid argument has the proper type and
         # that the necessary grid quantities are created if they are not already specified
         save_routine = (
-            _SyntheticRadiographySaveRoutine(output_file)
-            if output_file is not None
+            _SyntheticRadiographySaveRoutine(output_directory)
+            if output_directory is not None
             else None
         )
 
@@ -593,11 +596,12 @@ class Tracker(ParticleTracker):
         return theta.flatten(), phi.flatten()
 
     @particles.particle_input
+    @validate_quantities
     def create_particles(
         self,
         nparticles,
         particle_energy,
-        max_theta=None,
+        max_theta: u.Quantity[u.rad] | None = None,
         particle: Particle = Particle("p+"),  # noqa: B008
         distribution: Literal["monte-carlo", "uniform"] = "monte-carlo",
         random_seed=None,
@@ -1091,13 +1095,23 @@ class Tracker(ParticleTracker):
             "v0": v0,
         }
 
+    def _enforce_particle_creation(self) -> None:
+        """Ensure the array position array `x` has been populated."""
+
+        # Check to make sure particles have already been generated
+        if not hasattr(self, "x"):
+            raise ValueError(
+                "Either the create_particles or load_particles method must be "
+                "called before running the particle tracing algorithm."
+            )
+
 
 # *************************************************************************
 # Synthetic diagnostic methods (creating output)
 # *************************************************************************
 
 
-def synthetic_radiograph(  # noqa: C901
+def synthetic_radiograph(  # noqa: C901, PLR0912
     obj, size=None, bins=None, ignore_grid: bool = False, optical_density: bool = False
 ):
     r"""
@@ -1109,10 +1123,10 @@ def synthetic_radiograph(  # noqa: C901
 
     Parameters
     ----------
-    obj: `dict` or |Tracker|
-        Either a |Tracker|
-        object that has been run, or a dictionary equivalent to
-        |results_dict|.
+    obj: `dict`, |Tracker|, or `~pathlib.Path`
+        Either a |Tracker| object that has been run, or a dictionary equivalent
+        to |results_dict|. A path to an hdf5 file containing information
+        equivalent to the |results_dict| dictionary can also be passed.
 
     size : `~astropy.units.Quantity`, shape ``(2, 2)``, optional
         The size of the detector array, specified as the minimum
@@ -1162,6 +1176,20 @@ def synthetic_radiograph(  # noqa: C901
         d = obj.results_dict
     elif isinstance(obj, dict):
         d = obj
+    elif isinstance(obj, str | Path):
+        # Attempt to create a `results_dict` dictionary from the provided hdf5 path
+        d = {}
+
+        with h5py.File(obj, "r") as file:
+
+            def set_result(key, value):
+                d[key] = value[:]
+
+            file.visititems(set_result)
+
+            for attribute, attribute_value in file.attrs.items():
+                d[attribute] = attribute_value
+
     else:
         raise TypeError(
             f"Expected type dict or {Tracker} for argument `obj`, but "

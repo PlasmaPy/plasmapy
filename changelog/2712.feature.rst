@@ -1,0 +1,3 @@
+Added the ability to enable particle stopping in the |ParticleTracker|.
+Added a ``return_interpolator`` keyword to `~plasmapy.particles.atomic.stopping_power` to allow the user to specify the return of an interpolator function (`~scipy.interpolate.CubicSpline` under the hood).
+Added the `~plasmapy.formulary.collisions.misc.Bethe_stopping` function to the `~plasmapy.formulary.collisions` subpackage.
