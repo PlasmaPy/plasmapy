@@ -644,6 +644,12 @@ authors:
   family-names: Zhang
   alias: carolyz
 
+- given-names: Cameron
+  family-names: Kuchta
+  affiliation: UW-Madison
+  orcid: https://orcid.org/0000-0001-5028-4898
+  alias: kuchtact
+
 - given-names: Chase
   family-names: Davies
   alias: chasepd
