@@ -92,6 +92,7 @@ doc_subs: dict[str, str] = {
     "many ways to contribute": r":ref:`many ways`\ ",
     "maxpython": "3.12",
     "minpython": "3.10",
+    "normalization constant": r":term:`normalization constant`\ ",
     "open a terminal": r":ref:`open a terminal <opening-a-terminal>`\ ",
     "Open a terminal": r":ref:`Open a terminal <opening-a-terminal>`\ ",
     "parameter": r":term:`parameter`\ ",
