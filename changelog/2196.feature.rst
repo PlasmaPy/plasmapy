@@ -1,0 +1,2 @@
+Added the :file:`kinetic_alfven.ipynb` notebook
+ which contains examples for the kinetic Alfvén dispersion.

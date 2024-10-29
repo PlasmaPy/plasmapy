@@ -13,3 +13,4 @@ Example Notebooks
 .. nbgallery::
 
     /notebooks/dispersion/hollweg_dispersion
+    /notebooks/dispersion/kinetic_alfven
