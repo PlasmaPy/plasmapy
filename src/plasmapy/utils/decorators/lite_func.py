@@ -1,7 +1,4 @@
-"""
-Module for defining functionality that marks and handle Lite-Function
-creation.
-"""
+"""Defines a decorator for binding |lite-functions| to regular functions."""
 
 __all__ = ["bind_lite_func"]
 

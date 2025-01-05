@@ -1,5 +1,5 @@
 """
-Module for defining the base framework of the plasma classes.
+Defines the base framework of the plasma classes.
 
 .. attention::
 

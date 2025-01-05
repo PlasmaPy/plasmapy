@@ -1,6 +1,4 @@
-"""
-Module containing the definition for the general particle tracker.
-"""
+"""Defines the general particle tracker."""
 
 __all__ = [
     "ParticleTracker",

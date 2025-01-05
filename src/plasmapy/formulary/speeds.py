@@ -1,4 +1,4 @@
-"""Functions to calculate fundamental plasma speed parameters."""
+"""Fundamental speeds in plasmas."""
 
 __all__ = [
     "Alfven_speed",
@@ -685,7 +685,7 @@ def thermal_speed(
 
         - **NRL Formulary** ``method = "nrl"``
 
-          The NRL Plasma Formulary :cite:p:`nrlformulary:2019`
+          The NRL Plasma Formulary :cite:p:`nrlformulary`
           uses the square root of the Normal distribution's variance
           as the expression for thermal speed.
 

@@ -1,4 +1,4 @@
-"""Functionality to parse representations of particles into standard form."""
+"""Functionality for parsing representations of particles into standard form."""
 
 __all__ = [
     "create_alias_dicts",

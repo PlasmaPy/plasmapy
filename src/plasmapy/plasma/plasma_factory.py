@@ -1,5 +1,5 @@
 """
-Module for defining the framework around the plasma factory.
+Defines the framework around the plasma factory.
 
 .. attention::
 

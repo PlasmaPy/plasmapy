@@ -1,6 +1,4 @@
-"""
-A module to contain various decorators used to build readable and useful code.
-"""
+"""Utility decorators used on functions and classes throughout the package."""
 
 __all__ = [
     "angular_freq_to_hz",

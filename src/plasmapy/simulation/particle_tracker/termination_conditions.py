@@ -1,6 +1,4 @@
-"""
-Module containing termination conditions for the particle tracker.
-"""
+"""Termination conditions for the |ParticleTracker|."""
 
 __all__ = [
     "AbstractTerminationCondition",

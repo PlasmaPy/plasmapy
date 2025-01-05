@@ -1,6 +1,6 @@
 """
-The `plasmapy.particles` subpackage provides access to information about
-atoms, isotopes, ions, and other particles.
+Functionality to represent and access information about atoms, isotopes,
+ions, and fundamental particles.
 """
 
 # __all__ will be auto populated below

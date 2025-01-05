@@ -1,7 +1,4 @@
-"""
-The `~plasmapy.formulary.collisions` subpackage contains commonly
-used collisional formulae from plasma science.
-"""
+"""Formulas related to particle collisions in plasmas."""
 
 import inspect
 

@@ -1,4 +1,4 @@
-"""Functions to calculate plasma density parameters."""
+"""Formulas for plasma densities."""
 
 __all__ = [
     "critical_density",
@@ -23,7 +23,8 @@ __all__ += __aliases__
     },
 )
 def critical_density(omega: u.Quantity[u.rad / u.s]) -> u.Quantity[u.m**-3]:
-    r"""Calculate the plasma critical density for a radiation of a given frequency.
+    r"""
+    Calculate the plasma critical density for a radiation of a given frequency.
 
     Parameters
     ----------

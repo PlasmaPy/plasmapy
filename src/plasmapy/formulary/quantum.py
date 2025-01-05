@@ -1,8 +1,4 @@
-"""
-Functions for quantum parameters, including electron degenerate
-gases and warm dense matter.
-
-"""
+"""Quantum parameters, including electron degenerate plasmas and warm dense matter."""
 
 __all__ = [
     "chemical_potential",

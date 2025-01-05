@@ -1,4 +1,4 @@
-"""Frequency parameters related to collisions."""
+"""Frequencies related to particle collisions."""
 
 __all__ = [
     "SingleParticleCollisionFrequencies",
@@ -123,7 +123,7 @@ class SingleParticleCollisionFrequencies:
     For values of :math:`x ≪ 1` (the 'slow' or 'thermal' limit) or
     :math:`x ≫ 1` (the 'fast' or 'beam' limit), :math:`ψ` asymptotes to
     zero or one respectively. For simplified expressions in these
-    limits, please refer to page 31 of :cite:t:`nrlformulary:2019`.
+    limits, please refer to page 31 of :cite:t:`nrlformulary`.
 
     Examples
     --------
@@ -242,7 +242,7 @@ class SingleParticleCollisionFrequencies:
         See Equation (2.86) in :cite:t:`callen:unpublished`.
 
         The Lorentz collision frequency is equivalent to the variable
-        :math:`ν_0^{α/β}` on p. 31 of :cite:t:`nrlformulary:2019`.
+        :math:`ν_0^{α/β}` on p. 31 of :cite:t:`nrlformulary`.
 
         This form of the Lorentz collision frequency differs from the
         form found in
@@ -298,7 +298,7 @@ class SingleParticleCollisionFrequencies:
         `~scipy.integrate.quad`.
 
         For more information refer to page 31 of
-        :cite:t:`nrlformulary:2019`.
+        :cite:t:`nrlformulary`.
         """
         vectorized_integral = np.vectorize(self._phi_explicit)
 
@@ -893,7 +893,7 @@ def fundamental_electron_collision_freq(
 
     * :math:`1/τ_e` from equation (2.5e) on page 215 of
       :cite:t:`braginskii:1965`
-    * :math:`ν_e` from page 33 of :cite:t:`nrlformulary:2019`
+    * :math:`ν_e` from page 33 of :cite:t:`nrlformulary`
 
     Examples
     --------
@@ -1059,7 +1059,7 @@ def fundamental_ion_collision_freq(
 
     * :math:`1/τ_i` from equation (2.5i) on page 215 of
       :cite:t:`braginskii:1965`
-    * :math:`ν_i` from page 33 of :cite:t:`nrlformulary:2019`
+    * :math:`ν_i` from page 33 of :cite:t:`nrlformulary`
 
     Examples
     --------

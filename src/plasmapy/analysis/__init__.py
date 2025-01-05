@@ -1,4 +1,4 @@
-"""The analysis subpackage for PlasmaPy."""
+"""Analysis techniques that can be applied to plasma data sets."""
 
 __all__ = ["fit_functions", "nullpoint", "swept_langmuir"]
 

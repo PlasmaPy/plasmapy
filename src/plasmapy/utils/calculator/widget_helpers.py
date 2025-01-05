@@ -1,5 +1,6 @@
 """
-Contains functions that create widgets and process properties for the calculator.
+Functions that create widgets and process properties for the plasma
+calculator.
 """
 
 __all__: list[str] = []

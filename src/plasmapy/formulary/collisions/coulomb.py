@@ -1,15 +1,16 @@
 """
-Functionality for calculating Coulomb parameters for different
-configurations. Including a number of functions for handling Coulomb
-collisions spanning weakly coupled (low density) to strongly coupled
-(high density) regimes.
+Calculation of Coulomb logarithms and cross-sections.
 
 Coulomb collisions are collisions where the interaction force is
-conveyed via the electric field, instead of any kind of contact
-force. They usually result in relatively small deflections of particle
-trajectories. However, given that there are many charged particles in a
-plasma, one has to take into account the cumulative effects of many such
-collisions.
+conveyed via the electric field, instead of any kind of contact force.
+These collisions  usually result in relatively small deflections of
+particle trajectories. However, given that there are many charged
+particles in a plasma, one has to take into account the cumulative
+effects of many such collisions.
+
+This module includes functions for handling Coulomb collisions ranging
+from weakly coupled (low density) to strongly coupled (high density)
+regimes.
 """
 
 __all__ = [

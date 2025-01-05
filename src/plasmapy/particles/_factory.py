@@ -1,8 +1,4 @@
-"""
-A module containing an interface function that accepts inputs intended
-for |Particle|, |CustomParticle|, or |ParticleList| and returns the
-appropriate instance of one of those three classes.
-"""
+"""Contains a factory function for creating particles."""
 
 __all__: list[str] = []
 

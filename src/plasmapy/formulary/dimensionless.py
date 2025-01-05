@@ -1,12 +1,12 @@
 """
-Module of dimensionless plasma parameters.
+Dimensionless plasma parameters.
 
-These are especially important for determining what regime a plasma is
-in. (e.g., turbulent, quantum, collisional, etc.).
-
-For example, plasmas at high (much larger than 1) Reynolds numbers are
-highly turbulent, while turbulence is negligible at low Reynolds
-numbers.
+Dimensionless plasma parameters help us determine what regime a plasma
+is in. For example, plasma :math:`β` is the ratio of thermal pressure to
+magnetic pressure in a plasma. When :math:`β ≫ 1`, thermal pressure is
+more important to dynamical behavior than magnetic pressure.  When
+:math:`β ≪ 1`, magnetic pressure becomes more important than thermal
+pressure.
 """
 
 __all__ = [
@@ -242,7 +242,7 @@ def beta(
     The beta (:math:`β`) of a plasma is defined by
 
     .. math::
-        β = \frac{p_{th}}{p_{mag}} = \frac{n k_B T}{B^2/2\mu_0}
+        β = \frac{p_{th}}{p_{mag}} = \frac{n k_B T}{B^2/2μ_0}
 
     where :math:`p_{th}` is the `~plasmapy.formulary.misc.thermal_pressure`
     of the plasma and :math:`p_{mag}` is the

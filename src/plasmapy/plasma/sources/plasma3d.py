@@ -1,5 +1,9 @@
 """
-Defines the core Plasma class used by PlasmaPy to represent plasma properties.
+Defines the core class used to represent plasma properties.
+
+.. attention::
+
+   |expect-api-changes|
 """
 
 __all__ = ["Plasma3D"]

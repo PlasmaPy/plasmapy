@@ -1,3 +1,11 @@
+"""
+Functionality related to plasma simulation and particle tracking.
+
+.. important::
+
+   |expect-api-changes|
+"""
+
 __all__ = [
     "AbstractSimulation",
     "AbstractTimeDependentSimulation",

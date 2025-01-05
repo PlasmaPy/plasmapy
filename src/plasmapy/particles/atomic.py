@@ -1,4 +1,4 @@
-"""Functions that retrieve or are related to elemental or isotopic data."""
+"""Functions to access information about elements, isotopes, and ions."""
 
 __all__ = [
     "atomic_number",

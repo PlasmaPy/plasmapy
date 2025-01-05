@@ -1,6 +1,7 @@
 """
-Contains functionality for downloading files from a URL. Intended for
-downloading files from |PlasmaPy's data repository|.
+Functionality for downloading files from a URL.
+
+Intended for downloading files from |PlasmaPy's data repository|.
 """
 
 import contextlib

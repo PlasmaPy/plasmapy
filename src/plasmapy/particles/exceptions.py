@@ -1,4 +1,4 @@
-"""Collection of exceptions and warnings for `plasmapy.particles`."""
+"""Exceptions and warnings."""
 
 __all__ = [
     "ParticleError",

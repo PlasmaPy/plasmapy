@@ -1,6 +1,8 @@
 """
-The `~plasmapy.formulary` subpackage contains commonly used formulae
-from plasma science.
+Commonly used formulas for plasma science.
+
+Many of these formulas come from the NRL Plasma Formulary
+:cite:p:`nrlformulary`.
 """
 
 __all__: list[str] = []

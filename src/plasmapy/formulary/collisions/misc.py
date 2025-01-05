@@ -1,6 +1,4 @@
-"""
-Module of miscellaneous parameters related to collisions.
-"""
+"""Miscellaneous parameters related to particle collisions."""
 
 __all__ = [
     "mobility",

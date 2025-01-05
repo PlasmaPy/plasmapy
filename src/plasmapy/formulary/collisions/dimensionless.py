@@ -1,6 +1,4 @@
-"""
-Module of dimensionless parameters related to collisions.
-"""
+"""Dimensionless numbers related to particle collisions."""
 
 __all__ = [
     "coupling_parameter",

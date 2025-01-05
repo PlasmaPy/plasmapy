@@ -1,4 +1,4 @@
-"""Exceptions and warnings for functionality defined in `plasmapy.plasma`."""
+"""Exceptions and warnings."""
 
 __all__ = ["DataStandardError"]
 

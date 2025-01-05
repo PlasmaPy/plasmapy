@@ -1,7 +1,4 @@
-"""
-Functionality for calculating the numerical solutions to the Stix cold
-plasma function.
-"""
+"""Analytical solutions to the Stix cold plasma function."""
 
 __all__ = ["stix"]
 
@@ -31,6 +28,7 @@ def stix(  # noqa: C901, PLR0912, PLR0915
     r"""
     Calculate the cold plasma dispersion function presented by
     :cite:t:`stix:1992`, and discussed by :cite:t:`bellan:2012`.
+
     This is an analytical solution of equation 8 in
     :cite:t:`bellan:2012`.  See the **Notes** section below for
     additional details.

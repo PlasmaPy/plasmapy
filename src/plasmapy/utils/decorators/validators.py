@@ -1,6 +1,4 @@
-"""
-Various decorators to validate input/output arguments to functions.
-"""
+"""Decorators to validate arguments and return values."""
 
 __all__ = ["validate_class_attributes", "validate_quantities", "ValidateQuantities"]
 

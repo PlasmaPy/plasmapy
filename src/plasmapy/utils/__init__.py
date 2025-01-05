@@ -1,7 +1,4 @@
-"""
-Package of functions and classes used to develop clean, readable, and informative
-code.
-"""
+"""Utility functions and classes used throughout PlasmaPy."""
 
 __all__ = [
     "code_repr",

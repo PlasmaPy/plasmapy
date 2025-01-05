@@ -1,5 +1,9 @@
 """
 Defines the core Plasma class used by PlasmaPy to represent plasma properties.
+
+.. attention::
+
+   |expect-api-changes|
 """
 
 __all__ = ["PlasmaBlob"]

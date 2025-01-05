@@ -1,4 +1,4 @@
-"""Functionality for determining the floating potential of a Langmuir sweep."""
+"""Determination of the floating potential of a Langmuir sweep."""
 
 __all__ = ["find_floating_potential", "VFExtras"]
 __aliases__ = ["find_vf_"]

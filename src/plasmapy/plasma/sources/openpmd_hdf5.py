@@ -1,4 +1,10 @@
-"""Functionality for reading in HDF5 files following the OpenPMD standard."""
+"""
+Reading in HDF5 files following the |OpenPMD| standard.
+
+.. attention::
+
+   |expect-api-changes|
+"""
 
 from types import TracebackType
 

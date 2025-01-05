@@ -1,5 +1,5 @@
 """
-A class for storing ionization state data for multiple elements or
+Objects for storing ionization state data for multiple elements or
 isotopes.
 """
 

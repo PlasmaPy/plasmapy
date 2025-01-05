@@ -1,8 +1,4 @@
-"""
-Common distribution functions for plasmas, such as the Maxwellian or
-Kappa distributions. Functionality is intended to include generation,
-fitting and calculation.
-"""
+"""Distribution functions, including Maxwellian and Kappa distributions."""
 
 __all__ = [
     "Maxwellian_1D",

@@ -1,7 +1,4 @@
-"""
-Functionality for calculating various analytical solutions to the two
-fluid dispersion relation.
-"""
+"""Analytical solutions to the two-fluid plasma wave dispersion relation."""
 
 __all__ = ["two_fluid"]
 

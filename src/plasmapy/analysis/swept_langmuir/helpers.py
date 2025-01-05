@@ -1,4 +1,4 @@
-"""Helper functions for analyzing swept Langmuir traces."""
+"""Helper functionality for analyzing swept Langmuir traces."""
 
 __all__ = ["check_sweep"]
 

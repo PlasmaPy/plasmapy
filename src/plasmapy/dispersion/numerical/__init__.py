@@ -1,6 +1,5 @@
 """
-The `~plasmapy.dispersion.numerical` subpackage contains functionality
-associated with numerical dispersion solvers.
+Numerical plasma wave dispersion relations.
 
 .. attention::
 

@@ -1,6 +1,4 @@
-"""
-Module containing save routines for the particle tracker.
-"""
+"""Save routines for the |ParticleTracker|."""
 
 __all__ = [
     "AbstractSaveRoutine",

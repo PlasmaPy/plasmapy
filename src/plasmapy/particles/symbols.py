@@ -1,7 +1,4 @@
-"""
-Functions that deal with string representations of atomic symbols
-and numbers.
-"""
+"""Provides string representations of particles."""
 
 __all__ = [
     "atomic_symbol",

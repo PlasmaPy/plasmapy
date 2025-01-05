@@ -1,6 +1,4 @@
-"""
-Collection of private functions to load properties and construct widgets.
-"""
+"""Private functions to load properties and construct widgets."""
 
 __all__: list[str] = []
 

@@ -1,7 +1,4 @@
-"""
-Defines the Thomson scattering analysis module as part of
-`plasmapy.diagnostics`.
-"""
+"""Thomson scattering data analysis."""
 
 __all__ = [
     "spectral_density",

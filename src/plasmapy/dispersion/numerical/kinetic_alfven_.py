@@ -1,7 +1,4 @@
-"""
-Functionality for calculating various numerical solutions to the kinetic
-Alfvén dispersion relation.
-"""
+"""Numerical solutions of the kinetic Alfvén wave dispersion relation."""
 
 __all__ = ["kinetic_alfven"]
 

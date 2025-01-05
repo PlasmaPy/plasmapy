@@ -1,4 +1,4 @@
-"""Classes for representing cylindrical equilibria."""
+"""Plasma equilibria in cylindrical geometry."""
 
 import numpy as np
 import scipy.special

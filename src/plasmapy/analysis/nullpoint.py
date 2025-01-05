@@ -1,5 +1,5 @@
 """
-Functionality to find and analyze 3D magnetic null points.
+Locating and analyzing 3D magnetic null points.
 
 .. attention::
 

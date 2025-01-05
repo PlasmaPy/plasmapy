@@ -1,6 +1,7 @@
 """
-``FitFunction`` classes designed to assist in curve fitting of swept Langmuir
-traces.
+Curve fitting functionality.
+
+This functionality assists in curve fitting of swept Langmuir traces.
 """
 
 __all__ = [

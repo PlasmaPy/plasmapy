@@ -1,4 +1,4 @@
-"""Functions that are related to nuclear reactions."""
+"""Functionality related to nuclear reactions."""
 
 __all__ = ["nuclear_binding_energy", "nuclear_reaction_energy", "mass_energy"]
 

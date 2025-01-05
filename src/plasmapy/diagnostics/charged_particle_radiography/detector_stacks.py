@@ -1,6 +1,6 @@
 """
-Objects representing stacks of film and/or filter layers for charged particle
-detectors.
+Objects representing stacks of film and/or filter layers for charged
+particle detectors.
 """
 
 __all__ = [

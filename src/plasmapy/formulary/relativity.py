@@ -1,4 +1,4 @@
-"""Functionality for calculating relativistic quantities."""
+"""Calculation of quantities related to relativity."""
 
 __all__ = ["Lorentz_factor", "relativistic_energy", "RelativisticBody"]
 

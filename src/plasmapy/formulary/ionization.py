@@ -1,4 +1,4 @@
-"""Functions related to ionization states and the properties thereof."""
+"""Calculation of ionization equilibria."""
 
 __all__ = ["ionization_balance", "Saha", "Z_bal_"]
 __aliases__ = ["Z_bal_"]

@@ -1,4 +1,4 @@
-"""Functionality for representing one-dimensional equilibria."""
+"""One-dimensional plasma equilibria."""
 
 __all__ = ["HarrisSheet"]
 

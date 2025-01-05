@@ -1,7 +1,4 @@
-"""
-Classes, sets, and dictionaries to store data and taxonomy information
-for special particles.
-"""
+"""Functionality to store data and taxonomy information for special particles."""
 
 __all__ = [
     "antiparticles",

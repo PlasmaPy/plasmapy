@@ -1,8 +1,10 @@
 """
-Routines for the analysis of proton radiographs. These routines can be broadly
-classified as either creating synthetic radiographs from prescribed fields or
-methods of 'inverting' experimentally created radiographs to reconstruct the
-original fields (under some set of assumptions).
+Functionality related to synthetic charged particle radiography.
+
+These routines can be broadly classified as either creating synthetic
+radiographs from prescribed fields or methods of 'inverting'
+experimentally created radiographs to reconstruct the original fields
+under some set of assumptions.
 """
 
 __all__ = ["Tracker", "synthetic_radiograph"]

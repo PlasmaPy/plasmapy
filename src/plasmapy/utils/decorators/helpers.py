@@ -1,6 +1,4 @@
-"""
-Miscellaneous decorators for various package uses.
-"""
+"""Miscellaneous decorators."""
 
 __all__ = ["modify_docstring", "preserve_signature"]
 

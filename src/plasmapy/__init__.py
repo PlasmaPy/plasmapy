@@ -1,6 +1,5 @@
 """
-PlasmaPy is an open source Python package for plasma research and
-education.
+An open source Python package for plasma research and education.
 
 For more information about the software, please check out `PlasmaPy's
 online documentation <https://docs.plasmapy.org>`__ or use
@@ -46,20 +45,20 @@ from plasmapy import (
 
 try:
     try:
-        from plasmapy._dev.scm_version import version as __version__
+        from plasmapy._dev.scm_version import version
     except ImportError:
-        from plasmapy._version import (  # type: ignore[import-not-found,no-redef,unused-ignore]
-            version as __version__,
+        from plasmapy._version import (
+            version,  # type: ignore[import-not-found,no-redef,unused-ignore]
         )
 except Exception:  # coverage: ignore  # noqa: BLE001
-    __version__ = "0.0.0"  # package is not installed
+    version = "0.0.0"  # package is not installed
 
     import warnings
 
     warnings.warn(
         message=(
             "plasmapy.__version__ was not automatically generated, so "
-            f"it was set to {__version__} instead. The installation may "
+            f"it was set to {version} instead. The installation may "
             "be broken."
         ),
         category=ImportWarning,
@@ -67,11 +66,16 @@ except Exception:  # coverage: ignore  # noqa: BLE001
 
     del warnings
 
+__version__ = version
+"""The version of PlasmaPy."""
+
+
 __citation__ = (
     "Instructions on how to cite and acknowledge PlasmaPy are provided "
     "in the online documentation at: "
     "https://docs.plasmapy.org/en/stable/about/citation.html"
 )
+"""Describes how to cite and acknowledge PlasmaPy in publications."""
 
 
 def online_help(query: str) -> None:  # coverage: ignore

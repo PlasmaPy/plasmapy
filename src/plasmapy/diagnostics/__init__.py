@@ -1,6 +1,6 @@
 """
-The diagnostics subpackage contains functionality for defining diagnostic parameters
-and processing data collected by diagnostics, synthetic or experimental.
+Functionality for defining diagnostic parameters and processing real or
+synthetic data collected by plasma diagnostics.
 """
 
 __all__ = ["charged_particle_radiography", "langmuir", "thomson"]

@@ -1,5 +1,5 @@
 """
-Functionality to calculate excess statistics of time series.
+Performing excess statistics analyses of time series.
 
 .. attention::
 

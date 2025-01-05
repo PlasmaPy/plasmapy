@@ -1,6 +1,9 @@
 """
-Functionality to calculate the conditional average and conditional
-variance of a time series.
+Conditional averages and conditional variances of time series.
+
+.. attention::
+
+   |expect-api-changes|
 """
 
 __all__ = ["ConditionalEvents"]

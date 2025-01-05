@@ -1,15 +1,14 @@
 """
-Convert to and from Roman numerals.
+Conversion to and from Roman numerals.
 
-This file is adapted from the roman package that is available on PyPI,
-which has the following copyright/license information:
+This file is adapted from the ``roman`` package that is available on
+PyPI, which has the following copyright/license information:
 
 Copyright (c) 2001 Mark Pilgrim
 
 This program is free software; you can redistribute it and/or modify
 it under the terms of the Python 2.1.1 license, available at
 https://www.python.org/download/releases/2.1.1/license/
-
 """
 
 __all__ = [

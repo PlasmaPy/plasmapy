@@ -1,6 +1,4 @@
-"""
-Decorator for checking input/output arguments of functions.
-"""
+"""Decorators for checking arguments and return values of functions."""
 
 __all__ = [
     "check_values",

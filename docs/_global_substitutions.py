@@ -141,6 +141,7 @@ links_to_become_subs: dict[str, str] = {
     "Nox": "https://nox.thea.codes",
     "NumPy": "https://numpy.org",
     "office hours": "https://www.plasmapy.org/meetings/office_hours/",
+    "OpenPMD": "https://www.openpmd.org",
     "pandas": "https://pandas.pydata.org",
     "pip": "https://pip.pypa.io",
     "Plasma Hack Week": "https://hack.plasmapy.org",

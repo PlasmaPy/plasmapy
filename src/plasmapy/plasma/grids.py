@@ -1,6 +1,4 @@
-"""
-Defines the AbstractGrid class and child classes.
-"""
+"""For defining a plasma on a grid."""
 
 from collections.abc import Sequence
 

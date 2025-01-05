@@ -1,5 +1,5 @@
 """
-Module for loading ionization energy data from
+Functionality for loading ionization energy data from
 :file:`src/plasmapy/particles/data/ionization_energy.json`.
 """
 

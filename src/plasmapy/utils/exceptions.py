@@ -1,4 +1,4 @@
-"""Exceptions and warnings specific to PlasmaPy."""
+"""Exceptions and warnings."""
 
 __all__ = [
     "PlasmaPyError",

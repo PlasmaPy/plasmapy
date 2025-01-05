@@ -1,5 +1,5 @@
 """
-Module for loading isotope data from
+Functionality for loading isotope data from
 :file:`src/plasmapy/particles/data/isotopes.json`.
 """
 
