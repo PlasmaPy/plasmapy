@@ -277,7 +277,7 @@ sphinx_commands: tuple[str, ...] = (
 
 build_html: tuple[str, ...] = ("--builder", "html")
 check_hyperlinks: tuple[str, ...] = ("--builder", "linkcheck")
-docs_requirements = _get_requirements_filepath(category="docs", version=maxpython)
+docs_requirements = _get_requirements_filepath(category="docs", version=docpython)
 
 doc_troubleshooting_message = """
 

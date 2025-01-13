@@ -75,7 +75,7 @@ fqdn==1.5.1
     # via jsonschema
 h5py==3.12.1
     # via plasmapy (pyproject.toml)
-hypothesis==6.123.16
+hypothesis==6.123.17
     # via plasmapy (pyproject.toml)
 identify==2.6.5
     # via pre-commit
