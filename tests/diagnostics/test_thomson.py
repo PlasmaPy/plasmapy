@@ -362,15 +362,15 @@ def multiple_species_collective_args():
         "wavelengths": np.arange(520, 545, 0.01) * u.nm,
         "probe_wavelength": 532 * u.nm,
         "n": 5e17 * u.cm**-3,
-        "T_e": 10 * u.eV,
+        "T_e": np.array([10, 50]) * u.eV,
     }
     kwargs["T_i"] = np.array([25, 25]) * u.eV
     kwargs["ions"] = [Particle("p+"), Particle("C-12 5+")]
     kwargs["probe_vec"] = np.array([1, 0, 0])
     kwargs["scatter_vec"] = np.array([0, 1, 0])
-    kwargs["efract"] = np.array([1.0])
+    kwargs["efract"] = np.array([0.4, 0.6])
     kwargs["ifract"] = np.array([0.7, 0.3])
-    kwargs["electron_vel"] = np.array([[0, 0, 0]]) * u.km / u.s
+    kwargs["electron_vel"] = np.array([[0, 0, 0], [100, 0, 0]]) * u.km / u.s
     kwargs["ion_vel"] = np.array([[-100, 0, 0], [0, 100, 0]]) * u.km / u.s
 
     return kwargs
@@ -424,7 +424,7 @@ def test_multiple_species_collective_spectrum(
     max_wavelength = wavelength.value[np.argmax(Skw.value)]
 
     # Check width
-    assert np.isclose(width, 0.17, 1e-2), (
+    assert np.isclose(width, 0.1499, 1e-2), (
         f"Multiple ion species case spectrum width is {width} instead of "
         "expected 0.17"
     )
