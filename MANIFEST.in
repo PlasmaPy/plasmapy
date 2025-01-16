@@ -26,6 +26,7 @@ include CODEOWNERS
 
 global-exclude _build build _authors.rst
 global-exclude *.o *.py[cod]
+global-exclude uv.lock
 
 prune docs/api
 

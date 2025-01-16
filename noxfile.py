@@ -26,10 +26,8 @@ to be installed.
 
 import os
 import pathlib
-import platform
 import re
 import sys
-from typing import Literal
 
 import nox
 
@@ -45,8 +43,6 @@ supported_operating_systems: tuple[str, ...] = ("linux", "macos", "windows")
 maxpython = max(supported_python_versions)
 minpython = min(supported_python_versions)
 
-current_python = f"{sys.version_info.major}.{sys.version_info.minor}"
-
 # The documentation should be build always using the same version of
 # Python, which should be the latest version of Python supported by Read
 # the Docs. Because Read the Docs takes some time to support new
@@ -54,113 +50,53 @@ current_python = f"{sys.version_info.major}.{sys.version_info.minor}"
 
 docpython = "3.12"
 
+current_python = f"{sys.version_info.major}.{sys.version_info.minor}"
 nox.options.sessions: list[str] = [f"tests-{current_python}(skipslow)"]
+
 nox.options.default_venv_backend = "uv|virtualenv"
 
+uv_sync = ("uv", "sync", "--no-progress", "--frozen")
+
 running_on_ci = os.getenv("CI")
-
-
-def _get_requirements_filepath(
-    category: Literal["docs", "tests", "all"],
-    version: Literal["3.11", "3.12", "3.13"],
-    resolution: Literal["highest", "lowest-direct", "lowest"] = "highest",
-    os_platform: Literal["linux", "macos", "windows"] | None = None,
-) -> str:
-    """
-    Return the file path to the requirements file.
-
-    Parameters
-    ----------
-    category : str
-        The name of the optional dependency set, as defined in
-        :file:`pyproject.toml`.
-
-    version : str
-        The supported version of Python.
-
-    resolution : str
-        The resolution strategy used by uv.
-
-    os_platform : str, optional
-        The name of the target platform. By default, it will attempt to find the
-        requirement file associated with the current platform.
-    """
-
-    if os_platform is None:
-        current_platform = platform.system().lower()
-        os_platform = (
-            current_platform
-            if current_platform in supported_operating_systems
-            else "linux"
-        )
-
-    requirements_directory = "ci_requirements"
-    specifiers = [category, version, os_platform]
-    if resolution != "highest":
-        specifiers.append(resolution)
-    return f"{requirements_directory}/{'-'.join(specifiers)}.txt"
+uv_requirement = "uv >= 0.5.20"
 
 
 @nox.session
 def requirements(session) -> None:
     """
-    Regenerate the pinned requirements files used in CI.
-
-    This session uses `uv pip compile` to regenerate the pinned
-    requirements files in `ci_requirements/` for use by the Nox sessions
-    for running tests, building documentation, and performing other
-    continuous integration checks.
+    Regenerate the uv.lock file for running tests and building the
+    documentation.
     """
+    session.install(uv_requirement)
 
-    session.install("uv")
+    # If it becomes possible to exclude the current project when using
+    # `uv lock`, we should do so here. That would allow us to add a Nox
+    # session to validate the requirements back in.
+    session.run("uv", "lock", "--upgrade", "--no-progress")
 
-    category_version_resolution: list[tuple[str, str, str]] = [
-        ("tests", version, "highest") for version in supported_python_versions
-    ]
 
-    category_version_resolution += [
-        ("tests", minpython, "lowest-direct"),
-        ("docs", maxpython, "highest"),
-        ("all", maxpython, "highest"),
-    ]
-
-    category_flags: dict[str, tuple[str, ...]] = {
-        "all": ("--all-extras",),
-        "docs": ("--extra", "docs"),
-        "tests": ("--extra", "tests"),
-    }
-
-    command: tuple[str, ...] = (
-        "python",
-        "-m",
-        "uv",
-        "pip",
-        "compile",
-        "pyproject.toml",
-        "--upgrade",
-        "--quiet",
-        "--custom-compile-command",  # defines command to be included in file header
-        "nox -s requirements",
+@nox.session
+def validate_requirements(session: nox.Session) -> None:
+    """
+    Verify that the requirements in :file:`uv.lock` are compatible
+    with the requirements in `pyproject.toml`.
+    """
+    session.install(uv_requirement)
+    session.log(
+        "🛡 If this check fails, regenerate the pinned requirements in "
+        "`uv.lock` with `nox -s requirements`."
     )
 
-    for os_platform in supported_operating_systems:
-        for category, version, resolution in category_version_resolution:
-            filename = _get_requirements_filepath(
-                category, version, resolution, os_platform
-            )
-            session.run(
-                *command,
-                "--python-version",
-                version,
-                *category_flags[category],
-                "--output-file",
-                filename,
-                "--resolution",
-                resolution,
-                *session.posargs,
-                "--python-platform",
-                os_platform,
-            )
+    # Generate the cache without updating uv.lock by syncing the
+    # current environment. If there ends up being a `--dry-run` option
+    # for `uv sync`, we could probably use it here.
+
+    session.run("uv", "sync", "--frozen", "--all-extras", "--no-progress")
+
+    # Verify that uv.lock will be unchanged. Using --offline makes it
+    # so that only the information from the cache is used.
+
+    session.run("uv", "lock", "--check", "--offline", "--no-progress")
 
 
 pytest_command: tuple[str, ...] = (
@@ -198,13 +134,7 @@ test_specifiers: list = [
 def tests(session: nox.Session, test_specifier: nox._parametrize.Param) -> None:
     """Run tests with pytest."""
 
-    resolution = "lowest-direct" if test_specifier == "lowest-direct" else "highest"
-
-    requirements = _get_requirements_filepath(
-        category="tests",
-        version=session.python,
-        resolution=resolution,
-    )
+    session.install(uv_requirement)
 
     options: list[str] = []
 
@@ -223,7 +153,17 @@ def tests(session: nox.Session, test_specifier: nox._parametrize.Param) -> None:
     if gh_token := os.getenv("GH_TOKEN"):
         session.env["GH_TOKEN"] = gh_token
 
-    session.install("-r", requirements, ".[tests]")
+    match test_specifier:
+        case "lowest-direct":
+            session.install(".[tests]", "--resolution=lowest-direct")
+        case _:
+            # From https://nox.thea.codes/en/stable/cookbook.html#using-a-lockfile
+            session.run_install(
+                *uv_sync,
+                "--extra=tests",
+                env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
+            )
+
     session.run(*pytest_command, *options, *session.posargs)
 
 
@@ -245,9 +185,10 @@ def run_tests_with_dev_version_of(session: nox.Session, repository: str) -> None
     Running this session helps us catch problems resulting from breaking
     changes in an upstream dependency before its official release.
     """
-    if repository != "numpy":
-        session.install(f"git+{repository}")
-    else:
+
+    session.install(uv_requirement)
+
+    if repository == "numpy":
         # From: https://numpy.org/doc/1.26/dev/depending_on_numpy.html
         session.run_install(
             "uv",
@@ -261,6 +202,9 @@ def run_tests_with_dev_version_of(session: nox.Session, repository: str) -> None
             "https://pypi.anaconda.org/scientific-python-nightly-wheels/simple",
             "numpy",
         )
+    else:
+        session.install(f"git+{repository}")
+
     session.install(".[tests]")
     session.run(*pytest_command, *session.posargs)
 
@@ -277,7 +221,6 @@ sphinx_commands: tuple[str, ...] = (
 
 build_html: tuple[str, ...] = ("--builder", "html")
 check_hyperlinks: tuple[str, ...] = ("--builder", "linkcheck")
-docs_requirements = _get_requirements_filepath(category="docs", version=docpython)
 
 doc_troubleshooting_message = """
 
@@ -295,18 +238,27 @@ def docs(session: nox.Session) -> None:
 
     This session may require installation of pandoc and graphviz.
     """
+
     if running_on_ci:
-        session.debug(doc_troubleshooting_message)
-    session.install("-r", docs_requirements, ".[docs]")
+        session.log(doc_troubleshooting_message)
+
+    session.install(uv_requirement)
+
+    session.run_install(
+        *uv_sync,
+        "--extra=docs",
+        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
+    )
     session.run(*sphinx_commands, *build_html, *session.posargs)
+
     landing_page = (
         pathlib.Path(session.invoked_from) / "docs" / "build" / "html" / "index.html"
     )
 
     if not running_on_ci and landing_page.exists():
-        session.debug(f"The documentation may be previewed at {landing_page}")
+        session.log(f"The documentation may be previewed at {landing_page}")
     elif not running_on_ci:
-        session.debug(f"Documentation preview landing page not found: {landing_page}")
+        session.log(f"Documentation preview landing page not found: {landing_page}")
 
 
 @nox.session(python=docpython)
@@ -350,8 +302,13 @@ These variables are in the form of Python regular expressions:
 def linkcheck(session: nox.Session) -> None:
     """Check hyperlinks in documentation."""
     if running_on_ci:
-        session.debug(LINKCHECK_TROUBLESHOOTING)
-    session.install("-r", docs_requirements, ".[docs]")
+        session.log(LINKCHECK_TROUBLESHOOTING)
+    session.install(uv_requirement)
+    session.run_install(
+        *uv_sync,
+        "--extra=docs",
+        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
+    )
     session.run(*sphinx_commands, *check_hyperlinks, *session.posargs)
 
 
@@ -374,8 +331,17 @@ mypy error code. Please use sparingly!
 @nox.session(python=maxpython)
 def mypy(session: nox.Session) -> None:
     """Perform static type checking."""
+
+    session.install(uv_requirement)
+    session.run_install(
+        *uv_sync,
+        "--extra=tests",
+        env={"UV_PROJECT_ENVIRONMENT": session.virtualenv.location},
+    )
+
     if running_on_ci:
-        session.debug(MYPY_TROUBLESHOOTING)
+        session.log(MYPY_TROUBLESHOOTING)
+
     MYPY_COMMAND: tuple[str, ...] = (
         "mypy",
         ".",
@@ -386,13 +352,6 @@ def mypy(session: nox.Session) -> None:
         "--pretty",
     )
 
-    requirements = _get_requirements_filepath(
-        category="tests",
-        version=session.python,
-        resolution="highest",
-    )
-    session.install("pip")
-    session.install("-r", requirements, ".[tests]")
     session.run(*MYPY_COMMAND, *session.posargs)
 
 
@@ -401,30 +360,6 @@ def try_import(session: nox.Session) -> None:
     """Install PlasmaPy and import it."""
     session.install(".")
     session.run("python", "-c", "import plasmapy", *session.posargs)
-
-
-@nox.session
-def validate_requirements(session: nox.Session) -> None:
-    """Verify that the pinned requirements are consistent with pyproject.toml."""
-    requirements_file = _get_requirements_filepath(
-        category="all",
-        version=maxpython,
-        resolution="highest",
-    )
-    session.install("uv")
-    session.debug(
-        "🛡 If this check fails, regenerate the pinned requirements files "
-        "with `nox -s requirements` (see `ci_requirements/README.md`)."
-    )
-    session.run(
-        "uv",
-        "pip",
-        "install",
-        "-r",
-        requirements_file,
-        ".[docs,tests]",
-        "--dry-run",
-    )
 
 
 @nox.session

@@ -159,6 +159,3 @@ node_modules
 package-lock.json
 Untitled*
 untitled*
-
-# Remove if #2852 is addressed
-uv.lock

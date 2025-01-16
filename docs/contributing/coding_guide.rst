@@ -658,15 +658,16 @@ Dependencies and requirements
   - Support for core package dependencies be dropped **2 years** after
     their initial release.
 
-* The |ci_requirements/|_ directory contains pinned requirements files
-  for use in continuous integration tests (see
-  |ci_requirements/README.md|_).
+* The |uv.lock|_ file contains pinned requirements files
+  for use in continuous integration tests.
 
   - These files are updated periodically via pull requests created by a
     GitHub workflow to `update pinned requirements`_.
 
   - When updating requirements in |pyproject.toml|_, run
     :bash:`nox -s requirements` to update the pinned requirements files.
+
+  - Validate requirements with :bash:`nox -s validate_requirements`.
 
 * Even if a dependency is unlikely to be shared with packages installed
   alongside PlasmaPy, that dependency may have strict requirements that
@@ -1114,11 +1115,8 @@ The overall process of performing a release is:
 .. _`astropy.units`: https://docs.astropy.org/en/stable/units/index.html
 .. |astropy.units| replace:: `astropy.units`
 
-.. _`ci_requirements/`: https://github.com/PlasmaPy/PlasmaPy/tree/main/ci_requirements
-.. |ci_requirements/| replace:: :file:`ci_requirements/`
-
-.. _`ci_requirements/README.md`: https://github.com/PlasmaPy/PlasmaPy/blob/main/ci_requirements/README.md
-.. |ci_requirements/README.md| replace:: :file:`ci_requirements/README.md`
+.. _`uv.lock`: https://github.com/PlasmaPy/PlasmaPy/blob/main/uv.lock
+.. |uv.lock| replace:: :file:`uv.lock`
 
 .. _`mypy.ini`: https://github.com/PlasmaPy/PlasmaPy/blob/main/mypy.ini
 .. |mypy.ini| replace:: :file:`mypy.ini`

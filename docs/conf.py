@@ -244,6 +244,8 @@ bibtex_cite_id = "{key}"
 # sphinx-codeautolink
 
 codeautolink_concat_default = True
+codeautolink_warn_on_failed_resolve = False  # turn on for debugging
+codeautolink_warn_on_missing_inventory = False  # turn on for debugging
 
 # intersphinx
 
