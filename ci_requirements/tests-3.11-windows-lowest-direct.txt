@@ -282,7 +282,7 @@ pyzmq==26.2.0
     #   jupyter-client
     #   jupyter-server
     #   notebook
-referencing==0.35.1
+referencing==0.36.0
     # via
     #   jsonschema
     #   jsonschema-specifications
@@ -348,13 +348,14 @@ typing-extensions==4.12.2
     # via
     #   ipython
     #   mypy
+    #   referencing
 tzdata==2024.2
     # via pandas
 uncertainties==3.2.2
     # via lmfit
 urllib3==1.26.20
     # via requests
-virtualenv==20.28.1
+virtualenv==20.29.0
     # via
     #   nox
     #   pre-commit

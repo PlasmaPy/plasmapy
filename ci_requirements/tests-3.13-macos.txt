@@ -51,7 +51,7 @@ coverage==7.6.10
     # via pytest-cov
 cycler==0.12.1
     # via matplotlib
-debugpy==1.8.11
+debugpy==1.8.12
     # via ipykernel
 decorator==5.1.1
     # via ipython
@@ -75,7 +75,7 @@ fqdn==1.5.1
     # via jsonschema
 h5py==3.12.1
     # via plasmapy (pyproject.toml)
-hypothesis==6.123.17
+hypothesis==6.124.0
     # via plasmapy (pyproject.toml)
 identify==2.6.5
     # via pre-commit
@@ -296,7 +296,7 @@ pyzmq==26.2.0
     #   ipykernel
     #   jupyter-client
     #   jupyter-server
-referencing==0.35.1
+referencing==0.36.0
     # via
     #   jsonschema
     #   jsonschema-specifications
@@ -380,7 +380,7 @@ uri-template==1.3.0
     # via jsonschema
 urllib3==2.3.0
     # via requests
-virtualenv==20.28.1
+virtualenv==20.29.0
     # via
     #   nox
     #   pre-commit

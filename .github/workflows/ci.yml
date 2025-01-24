@@ -47,9 +47,9 @@ jobs:
           python: '3.11'
           nox_session: tests-3.11(lowest-direct)
 
-        - name: Documentation, Python 3.12, Ubuntu
+        - name: Documentation, Python 3.13, Ubuntu
           os: ubuntu-latest
-          python: '3.12'
+          python: '3.13'
           nox_session: docs
 
         - name: Static type checking with mypy, Python 3.13, Ubuntu
