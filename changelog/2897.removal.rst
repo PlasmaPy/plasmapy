@@ -1,0 +1,1 @@
+Removed :file:`src/plasmapy/dispersion/dispersionfunction.py`, which was deprecated in ``v2023.10.0``.  The functionality for the plasma dispersion function is in `plasmapy.dispersion.dispersion_functions`.

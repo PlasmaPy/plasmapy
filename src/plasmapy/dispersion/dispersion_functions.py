@@ -1,6 +1,6 @@
 """
-Module containing functionality focused on the plasma dispersion function
-:math:`Z(ζ)`.
+For calculating the plasma dispersion function :math:`Z(ζ)` and its
+derivative :math:`Z′(ζ)`.
 """
 
 __all__ = ["plasma_dispersion_func", "plasma_dispersion_func_deriv"]
