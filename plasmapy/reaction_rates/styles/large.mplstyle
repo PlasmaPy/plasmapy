@@ -1,0 +1,10 @@
+text.usetex: False
+
+font.family: sans-serif
+font.sans-serif: Arial, Helvetica
+font.size: 12
+legend.fontsize: 10
+xtick.labelsize: 18
+ytick.labelsize: 18
+axes.labelsize: 18 
+

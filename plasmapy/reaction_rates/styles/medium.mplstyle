@@ -1,0 +1,8 @@
+text.usetex: True
+text.latex.preamble: \usepackage{siunitx} \usepackage{mathtools}
+font.family: DejaVu Sans
+font.serif: Computer Modern
+legend.fontsize: medium
+xtick.labelsize: medium
+ytick.labelsize: medium
+axes.labelsize: medium
