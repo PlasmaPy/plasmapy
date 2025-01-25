@@ -678,6 +678,12 @@ def test_creating_mean_particle_for_parameter_named_ion() -> None:
     assert u.isclose(ion.charge, Z * const.e.si)
 
 
+@pytest.mark.parametrize("particle", ["p+", ("p+", "D+"), ["He-4", "Al", "Si"]])
+@particle_input
+def test_particle_list_input(particle: ParticleListLike) -> None:
+    assert isinstance(particle, ParticleList)
+
+
 @particle_input
 def return_particle(
     particle: ParticleLike, Z: float | None = None, mass_numb: int | None = None
