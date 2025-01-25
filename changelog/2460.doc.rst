@@ -1,0 +1,1 @@
+Add example notebook for `~plasmapy.dispersion.analytical.mhd_waves_`.
