@@ -7,6 +7,7 @@ __all__ = [
     "antiparticles",
     "create_particles_dict",
     "data_about_special_particles",
+    "latex_str_dict",
     "particle_zoo",
     "ParticleZoo",
     "special_ion_masses",
@@ -298,4 +299,23 @@ antiparticles = {
     "anti_nu_e": "nu_e",
     "anti_nu_mu": "nu_mu",
     "anti_nu_tau": "nu_tau",
+}
+
+latex_str_dict: dict[str, str] = {
+    "p+": "p$^+$",
+    "p-": "p$^-$",
+    "n": "n",
+    "e-": "e$^-$",
+    "e+": "e$^+$",
+    "mu+": "μ$^+$",
+    "mu-": "μ$^-$",
+    "tau+": r"\tau$^+$",
+    "tau-": r"\tau$^-$",
+    "nu_e": r"ν$_e$",
+    "nu_mu": r"ν$_μ$",
+    "nu_tau": r"ν$_τ$",
+    "antineutron": r"\bar{n}",
+    "anti_nu_e": r"\bar{ν}$_e$",
+    "anti_nu_mu": r"\bar{ν}$_μ$",
+    "anti_nu_tau": r"\bar{ν}$_τ$",
 }

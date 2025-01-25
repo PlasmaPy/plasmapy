@@ -894,6 +894,19 @@ class Particle(AbstractPhysicalParticle):
         """Return the particle's symbol."""
         return self.symbol
 
+    def latex_str(self) -> str:
+        """LaTeX friendly representation of the particle."""
+        if latex_str_ := _special_particles.get(self.symbol, None):
+            return latex_str_
+
+        isotope_info = f"$^{self.mass_number}$" if self.isotope else ""
+        charge_info = ""
+        if self.is_category(any_of={"charged", "uncharged"}):
+            Z = self.charge_number
+            charge_info = f"{np.abs(Z)}{np.sign(Z)}$" if Z != 0 else "0+"
+            charge_info = "$^{" + charge_info + "}$"
+        return f"{isotope_info}{self.element}{charge_info}"
+
     def __eq__(self, other: object) -> bool:
         """
         Determine if two objects correspond to the same particle.
