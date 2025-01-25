@@ -19,6 +19,7 @@ __all__ = [
     "particles",
     "plasma",
     "simulation",
+    "transport",
     "utils",
     "__version__",
     "__citation__",
