@@ -100,6 +100,7 @@ extensions = [
     "sphinx_gallery.load_style",
     "sphinx_issues",
     "sphinx_reredirects",
+    "sphinx_substitution_extensions",
     "sphinx_tabs.tabs",
     "sphinx_collapse",
     "sphinxcontrib.bibtex",
@@ -213,9 +214,11 @@ nitpick_ignore_regex = [
 # build, so use them in moderation!  Use docs/_global_substitutions.py
 # to define substitutions.
 
-rst_prolog = """
+rst_prolog = f"""
 .. role:: py(code)
    :language: python
+
+.. |maxpython| replace:: {global_substitutions['maxpython']}
 """
 
 # html output options
