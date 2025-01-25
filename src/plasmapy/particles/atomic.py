@@ -22,7 +22,7 @@ __all__ = [
     "stopping_power",
 ]
 
-from collections.abc import Callable
+from collections.abc import Callable, Iterable
 from numbers import Integral
 from typing import Any, Literal
 
@@ -395,7 +395,7 @@ def electric_charge(particle: ParticleLike) -> u.Quantity[u.C]:
     Examples
     --------
     >>> electric_charge("p+")
-    <<class 'astropy.constants.codata...'> name='Electron charge' ...>
+    <class 'astropy.constants.codata...'> name='Electron charge' ...>
     >>> electric_charge("H-")
     <Quantity -1.60217662e-19 C>
     """
@@ -1076,8 +1076,11 @@ def periodic_table_category(argument: str | int) -> str:
 @particle_input(any_of={"element", "isotope", "ion"})
 def ionic_levels(
     particle: ParticleLike,
-    min_charge: int = 0,
+    min_charge: int | None = None,
     max_charge: int | None = None,
+    step: int = 1,
+    *,
+    Z: Iterable[int] | None = None,
 ) -> ParticleList:
     """
     Return a |ParticleList| that includes different ionic levels of a
@@ -1088,18 +1091,27 @@ def ionic_levels(
     particle : |atom-like|
         Representation of an element, ion, or isotope.
 
-    min_charge : `int`, default: ``0``
-        The starting charge number.
+    min_charge : `int`, optional
+        The starting |charge number|. Defaults to zero if ``Z`` is not
+        provided.
 
     max_charge : `int`, optional
         The ending charge number, which will be included in the
-        |ParticleList|.  Defaults to the atomic number of ``particle``.
+        |ParticleList|.  Defaults to the atomic number of ``particle``
+        if ``Z`` is not provided.
+
+    step : `int`, default: ``1``
+        The increment between different charge numbers.
+
+    Z : |array_like| of `int`, |keyword-only|, optional
+        The charge numbers corresponding to ``particle``. May not be
+        provided if ``min_charge`` or ``max_charge`` is provided.
 
     Returns
     -------
     `~plasmapy.particles.particle_collections.ParticleList`
-        The ionic levels of the atom provided from ``min_charge`` to
-        ``max_charge``.
+        The ionic levels of the atom as provided from ``min_charge``
+        ``max_charge``, and ``step`` or from ``Z``.
 
     Examples
     --------
@@ -1108,11 +1120,26 @@ def ionic_levels(
     ParticleList(['He 0+', 'He 1+', 'He 2+'])
     >>> ionic_levels("Fe-56", min_charge=13, max_charge=15)
     ParticleList(['Fe-56 13+', 'Fe-56 14+', 'Fe-56 15+'])
+    >>> ionic_levels("O", min_charge=2, max_charge=8, step=2)
+    ParticleList(['O 2+', 'O 4+', 'O 6+', 'O 8+'])
+    >>> ionic_levels("Pb", Z=[3, 4, 6])
+    ParticleList(['Pb 3+', 'Pb 4+', 'Pb 6+'])
     """
     base_particle = Particle(particle.isotope or particle.element)  # type: ignore[union-attr]
 
+    if Z is not None:
+        if min_charge or max_charge is not None:
+            raise TypeError(
+                "Z may not be provided to ionic_levels if min_charge "
+                "or max_charge is provided."
+            )
+        return ParticleList([Particle(base_particle, Z=Z_) for Z_ in Z])
+
     if max_charge is None:
         max_charge = particle.atomic_number  # type: ignore[union-attr]
+
+    if min_charge is None:
+        min_charge = 0
 
     if not min_charge <= max_charge <= particle.atomic_number:  # type: ignore[union-attr]
         raise ChargeError(
@@ -1122,7 +1149,7 @@ def ionic_levels(
         )
 
     return ParticleList(
-        [Particle(base_particle, Z=Z) for Z in range(min_charge, max_charge + 1)]
+        [Particle(base_particle, Z=Z) for Z in range(min_charge, max_charge + 1, step)]
     )
 
 
