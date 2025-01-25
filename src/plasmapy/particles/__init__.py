@@ -25,6 +25,7 @@ from plasmapy.particles.atomic import (
     standard_atomic_weight,
 )
 from plasmapy.particles.decorators import particle_input
+from plasmapy.particles.interactions import AbstractParticleInteraction
 from plasmapy.particles.ionization_state import IonicLevel, IonizationState
 from plasmapy.particles.ionization_state_collection import IonizationStateCollection
 from plasmapy.particles.nuclear import nuclear_binding_energy, nuclear_reaction_energy
