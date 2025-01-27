@@ -12,13 +12,13 @@ argon2-cffi==23.1.0
     #   notebook
 argon2-cffi-bindings==21.2.0
     # via argon2-cffi
-asteval==1.0.5
+asteval==1.0.6
     # via lmfit
 astropy==5.2
     # via plasmapy (pyproject.toml)
 asttokens==3.0.0
     # via stack-data
-attrs==24.3.0
+attrs==25.1.0
     # via
     #   hypothesis
     #   jsonschema
@@ -53,19 +53,19 @@ entrypoints==0.4
     # via nbconvert
 execnet==2.1.1
     # via pytest-xdist
-executing==2.1.0
+executing==2.2.0
     # via stack-data
 fastjsonschema==2.21.1
     # via nbformat
-filelock==3.16.1
+filelock==3.17.0
     # via virtualenv
-fonttools==4.55.3
+fonttools==4.55.6
     # via matplotlib
 h5py==3.8.0
     # via plasmapy (pyproject.toml)
 hypothesis==6.108.2
     # via plasmapy (pyproject.toml)
-identify==2.6.5
+identify==2.6.6
     # via pre-commit
 idna==3.10
     # via
@@ -222,7 +222,7 @@ prometheus-client==0.21.1
     # via
     #   jupyter-server
     #   notebook
-prompt-toolkit==3.0.48
+prompt-toolkit==3.0.50
     # via ipython
 ptyprocess==0.7.0
     # via
@@ -278,7 +278,7 @@ pyzmq==26.2.0
     #   jupyter-client
     #   jupyter-server
     #   notebook
-referencing==0.35.1
+referencing==0.36.2
     # via
     #   jsonschema
     #   jsonschema-specifications
@@ -344,13 +344,14 @@ typing-extensions==4.12.2
     # via
     #   ipython
     #   mypy
-tzdata==2024.2
+    #   referencing
+tzdata==2025.1
     # via pandas
 uncertainties==3.2.2
     # via lmfit
 urllib3==1.26.20
     # via requests
-virtualenv==20.28.1
+virtualenv==20.29.1
     # via
     #   nox
     #   pre-commit
