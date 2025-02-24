@@ -1,0 +1,3 @@
+Added ``Z`` as a keyword argument to `~plasmapy.particles.atomic.ionic_levels` which
+allows users to provide an iterable of the |charge number| when defining a
+|ParticleList| for ions of a particular element or isotope.
