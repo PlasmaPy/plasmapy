@@ -1,0 +1,61 @@
+import sympy
+def pair_across_jump(symbol, **assumptions):
+    return sympy.symbols("{" + symbol + "}_{1:3}", **assumptions)
+Bx = pair_across_jump("B_x", real=True)
+
+Vx = pair_across_jump("V_x", real=True)
+
+Vy = pair_across_jump("V_y", real=True)
+
+By = pair_across_jump("B_y", real=True)
+
+Eq933 = sympy.Eq(Bx[0], Bx[1])
+
+Eq934 = sympy.Eq(Vx[0] * By[0] - Vy[0] * Bx[0],
+                 Vx[1] * By[1] - Vy[1] * Bx[1])
+
+rho = pair_across_jump(r"\rho", positive=True)
+
+Eq935 = sympy.Eq(rho[0] * Vx[0],
+                 rho[1] * Vx[1])
+
+p = pair_across_jump("p", positive = True)
+
+mu_0 = sympy.symbols("\mu_0", positive = True)
+
+Eq936 = sympy.Eq(rho[0] * Vx[0]**2 + p[0] + By[0]**2 / 2 / mu_0,
+                 rho[1] * Vx[1]**2 + p[1] + By[1]**2 / 2 / mu_0)
+
+Eq937 = sympy.Eq(rho[0] * Vx[0] * Vy[0] - Bx[0] * By[0] / mu_0,
+                 rho[1] * Vx[1] * Vy[1] - Bx[1] * By[1] / mu_0)
+
+V2 = (Vx[0]**2 + Vy[0]**2, Vx[1]**2 + Vy[1]**2)
+
+Gamma = sympy.symbols("Gamma", positive=True)
+
+Eq938 = sympy.Eq(
+    rho[0] * V2[0] * Vx[0] / 2 + Gamma / (Gamma - 1) * p[0] * Vx[0] + By[0] * (Vx[0] * By[0] - Vy[0] * Bx[0]) / mu_0,
+    rho[1] * V2[1] * Vx[1] / 2 + Gamma / (Gamma - 1) * p[1] * Vx[1] + By[1] * (Vx[1] * By[1] - Vy[1] * Bx[1]) / mu_0,
+)
+
+all_equations = [Eq933, Eq934, Eq935, Eq936, Eq937, Eq938]
+
+solve_for_these = [Bx[1], By[1], Vx[1], Vy[1], p[1], rho[1]]
+
+print("default")
+%timeit defsol = sympy.solve(all_equations, solve_for_these)
+
+print("rational = false")
+%timeit ratsol = sympy.solve(all_equations, solve_for_these, rational=False)
+
+print("simplify = false")
+%timeit unsimpsol = sympy.solve(all_equations, solve_for_these, simplify=False)
+
+print("implicit = true")
+%timeit implsol = sympy.solve(all_equations, solve_for_these, implicit=True)
+
+print("nonlinsolve")
+%timeit nonlinsol = sympy.nonlinsolve(all_equations, solve_for_these)
+
+print("solveset")
+%timeit solvesetsol = sympy.solveset(all_equations, solve_for_these, sympy.S.Reals)
