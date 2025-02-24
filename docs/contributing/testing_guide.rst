@@ -107,19 +107,10 @@ are located in |tests/formulary|_ and tests of
 `plasmapy.formulary.speeds` are located in
 |tests/formulary/test_speeds.py|_.
 
-.. _writing-tests:
-
-Writing Tests
-=============
-
-Every code contribution that adds new functionality requires both tests
-and documentation in order to be merged. Here we describe the process of
-write a test.
-
 .. _locating-tests:
 
 Locating tests
---------------
+==============
 
 Tests are located in the top-level |tests|_ directory. The directory
 structure of |tests|_ largely mirrors that of |src/plasmapy|_, which
@@ -151,6 +142,15 @@ actual printed output matches the output included in the docstring.
 
 More information on test organization, naming, and collection is
 provided in pytest_'s documentation on `test discovery conventions`_.
+
+.. _writing-tests:
+
+Writing Tests
+=============
+
+Every code contribution that adds new functionality requires both tests
+and documentation in order to be merged. Here we describe the process of
+writing a test.
 
 Assertions
 ----------
