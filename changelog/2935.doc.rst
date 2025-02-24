@@ -1,0 +1,1 @@
+Updated how to access test results and documentation previews in the |contributor guide| after recent changes to GitHub's user interface.

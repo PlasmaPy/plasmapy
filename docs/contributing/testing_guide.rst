@@ -90,9 +90,9 @@ Software tests help us to:
 Every code contribution to PlasmaPy with new functionality must also
 have corresponding tests. Creating or updating a pull request will
 activate PlasmaPy's test suite to be run via |GitHub Actions|, along
-with some additional checks. The results of the test suite are shown at
-the bottom of each pull request. Click on *Details* next to each test
-run to find the reason for any test failures.
+with some additional checks. The results of the test suite are shown in
+the list of checks at the bottom of each pull request. Click on the name
+of each check to find out more details about test failures.
 
 A |unit test| verifies a single unit of behavior, does it quickly, and
 does it in isolation from other tests :cite:p:`khorikov:2020`. A typical
@@ -563,7 +563,8 @@ have been automated using |GitHub Actions|.
 The following image shows how the results of the checks will appear in
 each pull request near the end of the *Conversation* tab. Checks that
 pass are marked with ✔️, while tests that fail are marked with ❌. Click
-on *Details* for information about why a particular check failed.
+on the name of each check for more information about why a particular
+check failed.
 
 .. image:: ../_static/contributor_guide/CI_checks_for_a_PR_from_2021.png
    :width: 700
@@ -597,9 +598,8 @@ and usually invoke |Nox| sessions defined in |noxfile.py|_.
 
   .. tip::
 
-     Click on :guilabel:`Details` next to the
-     **docs/readthedocs.org:plasmapy** check to access a preview of the
-     documentation.
+     Click on :guilabel:`**docs/readthedocs.org:plasmapy**` in the list
+     of checks to access a preview of the documentation.
 
 * The **Changelog** check verifies whether a changelog entry with the
   correct number is present in the |changelog|_ directory (unless the

@@ -36,7 +36,7 @@ jobs:
              - 🧪 [Writing tests](https://docs.plasmapy.org/en/latest/contributing/testing_guide.html#testing-guide)
 
             > [!TIP]
-            > 📚 For a documentation preview, click on *Details* next to **docs/readthedocs.org:plasmapy**. For cryptic documentation errors, see the [documentation troubleshooting guide](https://docs.plasmapy.org/en/latest/contributing/doc_guide.html#troubleshooting).
+            > 📚 For a documentation preview, click on **docs/readthedocs.org:plasmapy** in the list of checks below. For cryptic documentation errors, see the [documentation troubleshooting guide](https://docs.plasmapy.org/en/latest/contributing/doc_guide.html#troubleshooting).
 
             > [!TIP]
             > 🧹 Automatically fix most **pre-commit.ci** failures by commenting \`pre-commit.ci autofix\` below. For other failures, please see the [pre-commit troubleshooting guide](https://docs.plasmapy.org/en/stable/contributing/pre-commit.html#troubleshooting-pre-commit-failures).
