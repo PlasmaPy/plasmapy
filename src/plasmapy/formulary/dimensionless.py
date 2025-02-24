@@ -138,6 +138,10 @@ def Hall_parameter(
     collision frequency between plasma species :math:`s` (``particle``)
     and species :math:`s^{\prime}` (``ion``).
 
+    If the Hall parameter is low, the trajectory of electrons between
+    two encounters of heavy particles is approximately linear. If the Hall
+    parameter is high, the motion of the electrons is highly curved.
+
     **Aliases:** `betaH_`
 
     Parameters
