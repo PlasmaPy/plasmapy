@@ -24,6 +24,13 @@ class ForceFreeFluxRope:
     is a cylindrically symmetric force-free equilibrium which is often used
     to approximate the magnetic structure of interplanetary coronal mass
     ejections (ICMEs).
+
+    Examples
+    --------
+    >>> import astropy.units as u
+    >>> force_free_flux_rope = ForceFreeFluxRope(B0=19 * u.T, alpha=3 * 1 / u.m)
+    >>> force_free_flux_rope.B_magnitude(r=5 * u.m)
+    <Quantity 3.9063... T>
     """
 
     def __init__(self, B0, alpha: float) -> None:
@@ -51,6 +58,16 @@ class ForceFreeFluxRope:
         Returns
         -------
         `~astropy.units.Quantity`
+
+        Examples
+        --------
+        >>> import astropy.units as u
+        >>> B0 = 1 * u.T
+        >>> alpha = 1 * 1 / u.m
+        >>> fr = ForceFreeFluxRope(B0, alpha)
+        >>> r = [5, 3, 9] * u.m
+        >>> fr.B_theta(r)
+        <Quantity [-0.32757914, 0.33905896, 0.24531179] T>
         """
         return self.B0 * scipy.special.j1(self.alpha * r)
 
@@ -75,6 +92,15 @@ class ForceFreeFluxRope:
         -------
          `~astropy.units.Quantity`
 
+        Examples
+        --------
+        >>> import astropy.units as u
+        >>> B0 = 1 * u.T
+        >>> alpha = 1 * 1 / u.m
+        >>> fr = ForceFreeFluxRope(B0, alpha)
+        >>> r = [1, 5, 4] * u.m
+        >>> fr.B_z(r)
+        <Quantity [0.76519769, -0.17759677, -0.39714981] T>
         """
         return self.B0 * scipy.special.j0(self.alpha * r)
 
@@ -97,5 +123,15 @@ class ForceFreeFluxRope:
         Returns
         -------
         `~astropy.units.Quantity`
+
+        Examples
+        --------
+        >>> import astropy.units as u
+        >>> B0 = 1 * u.T
+        >>> alpha = 1 * 1 / u.m
+        >>> fr = ForceFreeFluxRope(B0, alpha)
+        >>> r = [10, 7, 3] * u.m
+        >>> fr.B_magnitude(r)
+        <Quantity [0.24974843, 0.30011581, 0.42730317] T>
         """
         return np.sqrt(self.B_z(r) ** 2 + self.B_theta(r) ** 2)
