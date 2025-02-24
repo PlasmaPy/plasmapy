@@ -1,0 +1,9 @@
+*.env
+.ipynb_checkpoints*
+*.swp
+*.pyc
+*.png
+*.csv
+tables
+images
+.DS_Store
