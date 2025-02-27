@@ -2,7 +2,6 @@
 # distribution (sdist) of PlasmaPy.
 
 graft changelog
-graft ci_requirements
 graft docs
 graft licenses
 graft src

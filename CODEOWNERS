@@ -35,7 +35,7 @@ docs/plasmapy_sphinx/ @rocco8773
 
 # project files
 
-ci_requirements/ @namurphy
+uv.lock @namurphy
 mypy.ini @namurphy
 pyproject.toml @namurphy
 type_stubs/ @namurphy

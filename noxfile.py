@@ -71,9 +71,11 @@ def requirements(session) -> None:
     """
     session.install(uv_requirement)
 
-    # If it becomes possible to exclude the current project when using
-    # `uv lock`, we should do so here. That would allow us to add a Nox
-    # session to validate the requirements back in.
+    # If we start using a different file to pin dependencies besides
+    # uv.lock, we will need to update the GitHub workflows so that the
+    # cache gets invalidated when the different file changes instead of
+    # uv.lock.
+
     session.run("uv", "lock", "--upgrade", "--no-progress")
 
 
