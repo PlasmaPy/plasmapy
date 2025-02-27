@@ -1,0 +1,1 @@
+Bumped the Python version for documentation builds from 3.12 to 3.13.

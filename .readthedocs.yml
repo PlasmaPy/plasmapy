@@ -12,7 +12,7 @@ formats:
 build:
   os: ubuntu-24.04
   tools:
-    python: '3.12'
+    python: '3.13'
 
   apt_packages:
   - graphviz
@@ -23,7 +23,7 @@ build:
     - asdf plugin add uv
     - asdf install uv latest
     - asdf global uv latest
-    - uv venv --python=3.12
+    - uv venv --python=3.13
 
     install:
     - uv sync --extra docs --frozen --exact

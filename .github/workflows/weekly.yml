@@ -74,24 +74,24 @@ jobs:
           python: '3.13'
           nox_session: run_tests_with_dev_version_of(lmfit)
 
-        - name: Documentation, Python 3.12, Ubuntu
+        - name: Documentation, Python 3.13, Ubuntu
           os: ubuntu-latest
-          python: '3.12'
+          python: '3.13'
           nox_session: docs
 
-        - name: Documentation, Python 3.12, sphinx-dev, Ubuntu
+        - name: Documentation, Python 3.13, sphinx-dev, Ubuntu
           os: ubuntu-latest
-          python: '3.12'
+          python: '3.13'
           nox_session: build_docs_with_dev_version_of(sphinx)
 
-        - name: Documentation, Python 3.12, sphinx_rtd_theme-dev, Ubuntu
+        - name: Documentation, Python 3.13, sphinx_rtd_theme-dev, Ubuntu
           os: ubuntu-latest
-          python: '3.12'
+          python: '3.13'
           nox_session: build_docs_with_dev_version_of(sphinx_rtd_theme)
 
-        - name: Documentation, Python 3.12, nbsphinx-dev, Ubuntu
+        - name: Documentation, Python 3.13, nbsphinx-dev, Ubuntu
           os: ubuntu-latest
-          python: '3.12'
+          python: '3.13'
           nox_session: build_docs_with_dev_version_of(nbsphinx)
 
         - name: Static type checking with mypy, Python 3.13, Windows

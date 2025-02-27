@@ -43,12 +43,15 @@ supported_operating_systems: tuple[str, ...] = ("linux", "macos", "windows")
 maxpython = max(supported_python_versions)
 minpython = min(supported_python_versions)
 
-# The documentation should be build always using the same version of
-# Python, which should be the latest version of Python supported by Read
-# the Docs. Because Read the Docs takes some time to support new
-# releases of Python, we should not link docpython to maxpython.
+current_python = f"{sys.version_info.major}.{sys.version_info.minor}"
 
-docpython = "3.12"
+# The documentation should be built always using the same version of
+# Python. Read the Docs enables new version of Python a few months
+# after an October release of Python, so docpython ≠ maxpython in that
+# period. After updating docpython, run `nox -s requirements` and update
+# GitHub workflows for CI and weekly tests.
+
+docpython = "3.13"
 
 current_python = f"{sys.version_info.major}.{sys.version_info.minor}"
 nox.options.sessions: list[str] = [f"tests-{current_python}(skipslow)"]
@@ -253,6 +256,8 @@ def docs(session: nox.Session) -> None:
 
     This session may require installation of pandoc and graphviz.
     """
+
+    session.run(*sphinx_base_command, *build_html, *session.posargs)
 
     if running_on_ci:
         session.log(doc_troubleshooting_message)
