@@ -73,11 +73,12 @@ installed into |uv|-managed
 `virtual environments <virtual environment_>`_ without installing |pip|.
 
 After `installing uv`_, a `virtual environment`_ with |Python| version
-3.12 can be created by opening a terminal and running:
+|maxpython| can be created by opening a terminal and running:
 
 .. code-block:: bash
+   :substitutions:
 
-   uv venv --python 3.12
+   uv venv --python |maxpython|
 
 |uv| will automatically download |Python| and link it to
 the `virtual environment`_'s directory at (by default) :file:`.venv`. The
